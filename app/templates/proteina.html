@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="
+   {{url_for('static', filename = 'css/style.css')}} ">
+    <title>Proteínas</title>
+</head>
+<body>
+     <!--Nav bar-->
+    <nav class="navbar">
+        <div class="logo">
+            <a href="{{url_for('main.index')}}" class="nav-logo">
+                <img src="{{url_for('static', filename = 'img/meta_logo-removebg-preview.png')}}" alt="" class="nav-image">
+            </a>
+        </div>
+        <div class="menu-bars" id="menu-bars">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-menu" id="nav-menu">
+            <!-- Login / Logout -->
+            <li class="login-link">
+                {% if current_user.is_authenticated %}
+                    <span class="user-name">
+                        Olá, {{ current_user.username }} 👋
+                    </span>
+                    <a href="{{ url_for('main.logout') }}" class="logout-btn">
+                        Logout
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('main.login') }}" class="login-btn">
+                        Login
+                    </a>
+                {% endif %}
+            </li>
+            <li class="nav-item">
+                <a href="{{url_for('main.index')}}" class="nav-link">HOME</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{url_for('main.index')}}#about-section" class="nav-link">SOBRE</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{url_for('main.index')}}#product-section" class="nav-link">PRODUTOS</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{url_for('main.index')}}#testimonials-section" class="nav-link">TESTEMUNHOS</a>
+            </li>
+            <li class="nav-item">
+                <a href="{{url_for('main.index')}}#contact-section" class="nav-link">CONTACTO</a>
+            </li>
+            <li class="nav-item cart-icon" id="openCart">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cartCount" class="cart-count">0</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!--Artigos/Produtos-->
+    <section class="artigo-section" id="product-section">
+        <div class="artigo-title">
+            <h2> NOSSOS ARTIGOS</h2>
+        </div>
+        <div class="artigo-container">
+            {% for produto in produtos %}
+           <div class="artigo-card">
+                <div class="favorito" data-id="{{ produto.slug }}">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div class="img-produto">
+                    <a href="{{ url_for('main.produto_detalhe', slug=produto.slug) }}">
+                        <img src="{{url_for('static', filename=produto.imagem) }}" alt="">
+                    </a>
+                    <div class="artigo-info">
+                         <p class="price-artigo">
+                            {{ "%.2f"|format(produto.preco)}} MT
+                         </p>
+                        <h3>{{ produto.nome }}</h3>
+                        <div class="rating">
+                            <i class="fa-solid fa-star" data-star="1"></i>
+                            <i class="fa-solid fa-star" data-star="2"></i>
+                            <i class="fa-solid fa-star" data-star="3"></i>
+                            <i class="fa-solid fa-star" data-star="4"></i>
+                            <i class="fa-solid fa-star" data-star="5"></i>
+                        </div>    
+                    </div>
+                    <button class="cart-btn" data-id="{{ produto.slug }}">
+                        Adicionar
+                        <i class="fa-solid fa-cart-shopping"></i>   
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>   
+    </section>
+
+    <section class="pagina-produto" id="paginaProduto">
+        <button class="voltar">&#8592 Voltar</button>
+        <div class="produto-detalhe">
+            <div class="produto-container">
+                <img id="produtoImagem" src="" alt="">
+                <p id="produtoPreco"></p>
+            </div>
+            <div class="produto-content">
+                <h2 id="produtoTitulo"></h2>
+                <div id="produtoDescricao"></div>
+            </div>
+        </div>
+    </section>
+
+    <!--Chat-->
+    <section class="chat-section">
+        <div class="chat-button" onclick="toggleChat()">
+            💬
+        </div>
+        <div class="chat-box" id="chatBox">            
+            <div class="chat-header">
+                Metamorphose Fit
+                <span onclick="toggleChat()">✖</span>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="bot-message">
+                    Olá 👋 Como podemos ajudar você hoje?
+                </div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+                <button onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-text">
+                © 2026 • Metamorphose Fit
+            </div>
+            <div class="footer-right">
+                <div class="social-icons">
+                    <a href="https://facebook.com"><img src="{{url_for('static', filename = 'img/icons8-facebook-novo-48.png')}} " alt=""></a>
+                    <a href="#"><img src="{{url_for('static', filename = 'img/icons8-whatsapp-48.png')}} " alt=""></a>
+                    <a href="https://instagram.com"><img src=".{{url_for('static', filename = 'img/icons8-instagram-48.png')}} " alt=""></a>
+                    <a href="https://tiktok.com"><img src="{{url_for('static', filename = 'img/icons8-tik-tok-48.png')}} " alt=""></a>
+                </div>
+
+                <div class="footer-logo">
+                    <img src="{{url_for('static', filename = 'img/meta_logo-removebg-preview.png')}} " alt="">
+                </div>
+            </div>
+            
+        </div>
+    </footer> 
+  
+    <!--Cart Drawer-->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3>Seu Carrinho</h3>
+            <i class="fa-solid fa-xmark" id="closeCart"></i>
+        </div>
+
+        <div class="cart-items" id="cartItems"></div>
+
+        <div class="cart-footer">
+            <h4>Total: <span id="cartTotal">0 MT</span></h4>
+            <button id="checkoutBtn">Finalizar Pedido</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="{{url_for('static', filename = 'js/script.js')}} "></script>
+</body>
+</html>

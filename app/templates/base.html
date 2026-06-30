@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>{% block title %}Meta Store{% endblock %}</title>
+
+        <!-- CSS GLOBAL -->
+        <link rel="stylesheet"
+            href="{{ url_for('static', filename='css/navbar.css') }}">
+
+        <link rel="stylesheet"
+            href="{{ url_for('static', filename='css/footer.css') }}">
+
+        {% block extra_css %}{% endblock %}
+    </head>
+
+    <body>
+        <!-- NAVBAR -->
+        {% include "partials/navbar.html" %}
+
+            <!-- CONTEÚDO -->
+            <main style="margin-top:100px; min-height:80vh;">
+                {% block content %}{% endblock %}
+            </main>
+
+        <!-- FOOTER -->
+        {% include "partials/footer.html" %}
+
+        <!-- JS GLOBAL -->
+        <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
+
+        {% block extra_js %}
+            <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,269 @@
+@font-face{
+    font-family: 'bozon';
+    src: url('../bozon/ROHH\ \ Bozon\ Regular.otf') format('opentype');
+}
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+html{
+    scroll-behavior: smooth;
+}
+body{
+    overflow-x: hidden;
+    font-family: 'bozon';
+}
+body::before{
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(135deg, #16a34a 0%,#ffffff 50%,#223FAD 100%);
+    background-size: 300% 300%; 
+    filter: blur(150px);
+    opacity: 0.4;
+    animation: gradientMove 10s ease infinite;
+}
+
+/* ================= BREADCRUMB ================= */
+
+.breadcrumb-container{
+    max-width:1300px;
+    margin:120px auto 20px auto;
+    padding:0 20px;
+}
+
+.breadcrumb{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px;
+    backdrop-filter:blur(10px);
+
+    padding:12px 20px;
+
+    border-radius:12px;
+
+    box-shadow:
+        0 5px 20px rgba(0,0,0,.08);
+}
+
+.breadcrumb a{
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    color:#223FAD;
+
+    font-size:15px;
+    font-weight:600;
+
+    transition:.3s ease;
+}
+
+.breadcrumb a:hover{
+    color:#16a34a;
+}
+
+.separator{
+    color:#999;
+    font-size:12px;
+}
+
+.current-page{
+    color:#F97316;
+    font-weight:700;
+}
+
+/* Container principal */
+.produto-detalhe-container {
+    max-width: 1300px;
+    margin: 5% auto 5% auto;
+    display: flex;
+    gap: 50px;
+    flex-wrap: wrap;
+    padding: 0 20px;
+}
+
+/* Imagem do produto */
+.produto-imagem {
+    flex: 1 1 400px;
+    text-align: center;
+}
+
+.produto-imagem img {
+    width: 100%;
+    max-width: 500px;  
+}
+
+/* Informações do produto */
+.produto-info {
+    flex: 1 1 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.produto-info h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #16a34a;
+}
+.produto-info h2::after{
+    content: '';
+    display: block;
+    width: 500px;
+    height: 4px;
+    background-color: #223FAD;
+    margin: 10px 0;
+    border-radius: 2px;
+}
+
+.produto-preco {
+    font-size: 1.5rem;
+    color: #e63946;
+    font-weight: bold;
+}
+
+.produto-categoria {
+    font-size: 1rem;
+    margin: 10px 0;
+    color: #555;
+}
+
+/* Descrição do produto com scroll */
+.produto-descricao {
+    margin-top: 15px;
+    line-height: 1.6;
+    color: #333;
+    max-height: 500px;   /* altura máxima visível da descrição */
+    overflow-y: auto;    /* ativa scroll vertical quando necessário */
+    padding-right: 10px; /* evita que o texto fique encostado na scrollbar */
+}
+
+/* Estilo do scrollbar */
+.produto-descricao::-webkit-scrollbar {
+    width: 8px;
+}
+
+.produto-descricao::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+}
+
+.produto-descricao::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+}
+
+.produto-descricao::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.5);
+}
+
+/* Para Firefox */
+.produto-descricao {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.3) rgba(0,0,0,0.05);
+}
+
+
+.rating {
+    margin: 10px 0;
+    color: #f4c150;
+}
+
+/* Botão de carrinho */
+.cart-btn {
+    background-color: #16a34a;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: fit-content;
+}
+
+.cart-btn:hover {
+    background-color: #223FAD;
+}
+
+/* ======= RESPONSIVIDADE ======= */
+
+/* Laptop médio e telas grandes (até 1024px) */
+@media (max-width: 1024px) {
+    .produto-detalhe-container {
+        gap: 30px;
+        padding: 0 15px;
+    }
+    
+    .produto-info h2 {
+        font-size: 1.8rem;
+    }
+
+    .produto-preco {
+        font-size: 1.4rem;
+    }
+}
+
+/* Tablets (até 768px) */
+@media (max-width: 768px) {
+    .produto-detalhe-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .produto-imagem img {
+        max-width: 350px;
+    }
+
+    .produto-info h2 {
+        font-size: 1.6rem;
+    }
+
+    .produto-preco {
+        font-size: 1.3rem;
+    }
+
+    .cart-btn {
+        padding: 10px 18px;
+        font-size: 0.95rem;
+    }
+}
+
+/* Celulares (até 450px) */
+@media (max-width: 450px) {
+    .produto-imagem img {
+        max-width: 280px;
+    }
+
+    .produto-info h2 {
+        font-size: 1.4rem;
+        text-align: center;
+    }
+
+    .produto-preco {
+        font-size: 1.2rem;
+        text-align: center;
+    }
+
+    .produto-categoria {
+        text-align: center;
+    }
+
+    .produto-descricao {
+        font-size: 0.95rem;
+        text-align: justify;
+    }
+
+    .cart-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.95rem;
+    }
+}

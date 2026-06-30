@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Produtos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/produto.css') }}">
+    <link rel="stylesheet"href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="pagina-produtos">
+
+    <section class="container">
+        <h1 class="titulo-pagina">Nossos Produtos</h1>
+
+        <div class="produtos-container">
+            {% for produto in produtos %}
+            <div class="produto-card-horizontal">
+                <div class="img-box">
+                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}">
+                </div>
+                <div class="produto-info">
+                    <h3>{{ produto.nome }}</h3>
+                    <p class="preco">{{ produto.preco }} MT</p>
+                    <div>{{ produto.descricao | safe }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+</body>
+</html>

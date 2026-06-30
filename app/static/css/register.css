@@ -1,0 +1,136 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #16a34a, #223fad);
+}
+
+/* Container do formulário */
+.register-container {
+    background: linear-gradient(135deg,rgba(34, 63, 173, 0.95),rgba(22, 163, 74, 0.95));
+    color: #fff;
+    backdrop-filter: blur(10px);
+    padding: 45px 35px;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow:0 20px 45px rgba(0,0,0,0.25);
+    text-align: center;
+    animation: fadeIn 0.6s ease;
+}
+
+/* Título */
+.register-container h3 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #fff;
+    font-size: 28px;
+}
+
+/* Inputs */
+.register-container input {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.register-container input:focus {
+    border-color: #16a34a;
+    outline: none;
+    box-shadow: 0 0 5px rgba(22, 163, 74, 0.5);
+}
+
+/* Password toggle */
+.password-box {
+    position: relative;
+}
+
+.password-box i {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #888;
+    transition: 0.3s;
+}
+
+.password-box i:hover {
+    color: #16a34a;
+}
+
+/* Botão */
+.register-container button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(145deg,#16a34a,#223FAD);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.register-container button:hover {
+    background: linear-gradient(145deg,#223FAD,#16a34a);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+}
+.register-container p{
+    margin-top: 18px;
+    font-size: 0.9rem;
+}
+.register-container a{
+    text-decoration: none;
+    color: #223fad;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+/* Mensagens de erro ou flash */
+.error {
+    text-align: center;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    color: #fff;
+    font-weight: bold;
+}
+
+.error.danger {
+    background-color: #dc2626; /* vermelho */
+}
+
+.error.success {
+    background-color: #16a34a; /* verde */
+}
+
+/* Responsivo */
+@media (max-width: 450px) {
+    .register-container {
+        padding: 30px 20px;
+    }
+
+    .register-container h3 {
+        font-size: 24px;
+    }
+
+    .register-container button {
+        font-size: 16px;
+    }
+}

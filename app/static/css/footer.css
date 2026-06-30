@@ -1,0 +1,125 @@
+@font-face{
+    font-family: 'bozon';
+    src: url('../bozon/ROHH\ \ Bozon\ Regular.otf') format('opentype');
+}
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+/*-----------Footer--------------------*/
+.footer{
+    background:#0f1a34;
+    color:#fff;
+    padding:20px 10px;
+}
+
+.footer-content{
+    max-width:1200px;
+    margin:auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+}
+
+.footer-text{
+    font-size:24px;
+}
+
+.footer-right{
+    display:flex;
+    align-items:center;
+    gap:30px;
+}
+
+/* Redes sociais */
+.social-icons{
+    display:flex;
+    gap:20px;
+}
+
+.social-icons a img{
+    width:40px;
+    height:40px;
+    transition:0.3s;
+}
+
+.social-icons a img:hover{
+    transform:scale(1.2);
+}
+
+/* Logo */
+.footer-logo img{
+    width:100px;
+    animation:spin 10s linear infinite;
+}
+
+/* TABLET */
+@media (max-width:1024px){
+
+    .footer-content{
+        max-width:900px;
+    }
+
+    .footer-logo img{
+        width:80px;
+    }
+
+    .footer-text{
+        font-size:20px;
+    }
+
+    .social-icons a img{
+        width:35px;
+        height:35px;
+    }
+}
+
+/* MOBILE */
+@media (max-width:768px){
+
+    .footer-content{
+        flex-direction:column;
+        text-align:center;
+        gap:25px;
+    }
+
+    .footer-right{
+        flex-direction:column;
+        gap:15px;
+    }
+
+    .footer-logo img{
+        width:70px;
+    }
+
+    .footer-text{
+        font-size:18px;
+    }
+
+    .social-icons a img{
+        width:32px;
+        height:32px;
+    }
+}
+
+/* MOBILE PEQUENO */
+@media (max-width:450px){
+
+    .footer-logo img{
+        width:60px;
+    }
+
+    .footer-text{
+        font-size:15px;
+        line-height:1.4;
+    }
+
+    .social-icons a img{
+        width:28px;
+        height:28px;
+    }
+}

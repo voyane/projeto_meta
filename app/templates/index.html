@@ -1,0 +1,383 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Metamorphose Fit
+{% endblock %}
+
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+{% endblock %}
+
+
+{% block content %}
+ 
+     <!--Main-->
+    <section class="message-image">
+        <div class="message">
+            <h2>
+                Metamorphose Fit Shop
+            </h2>
+            <p>Transforma o teu corpo com suplementos de alta performance</p>
+            <p>Resultados reais, energia máxima e qualidade garantida</p>
+            <button class="btn" onclick="comprarWhatsapp()">
+                Pedir no WhatsApp
+            </button>
+        </div>
+        <div class="image">
+            <img src="{{url_for('static', filename = 'img/suplemento.png')}}" alt="">
+        </div>
+    </section>
+
+    <!--About Section-->
+    <section class="about-section" id="about-section">
+        <div class="about-us">
+            <h2>SOBRE NÓS</h2>
+        </div>
+        <div class="slider">
+            <div class="list">
+                <div class="item">
+                    <div class="sobre-image">
+                        <img src="{{url_for('static', filename = 'img/quem-somos.png')}}" alt="Quem Somos Metamorphose Fit" class="img-prev" onclick="openImage(this.src)">
+                    </div>
+                    <div class="sobre-content">
+                        <span class="sobre-tag">QUEM SOMOS</span>
+                        <h2>A Evolução Começa Aqui</h2>
+
+                        <p>
+                            <strong>
+                                A Metamorphose Fit nasceu com um propósito claro: 
+                            </strong>
+                            transformar disciplina em resultado real, ajudar pessoas a alcançarem resultados extraordinários através de suplementação de qualidade, orientação correcta e compromisso com a evolução constante. Acreditamos que cada corpo tem potencial para evoluir, seja hipertrofia, definição, resistência ou transformação física completa.
+                        </p>
+                        <p>
+                            Somos uma loja especializada em suplementos alimentares voltados para:
+                        </p>
+                        <ul class="sobre-beneficios">
+                            <li>Ganho de massa muscular;</li>
+                            <li>Aumento de força;</li>
+                            <li>Recuperação muscular acelerada;</li>
+                            <li>Melhoria de desempenho físico;</li>
+                            <li>Emagrecimento saudável e definido.</li>
+                        </ul>
+                        <p>
+                            Cada suplemento disponível na loja foi testado e aprovado por atletas e praticantes de musculação. Mais do que vender produtos, oferecemos confiança, suporte e compromisso com os resultados dos nossos clientes. Entendemos que cada pessoa tem um objetivo diferente e estamos aqui para apoiar cada etapa desse processo.
+                            A Metamorphose Fit representa disciplina, foco e superação. Porque acreditamos que a verdadeira metamorfose começa na decisão de evoluir.
+                        </p>
+                    </div>
+                </div>
+                <div class="item">
+                        <div class="sobre-image">
+                            <img src="{{url_for('static', filename = 'img/quem-somos-1.png')}}" alt="Missão Metamorphose Fit" class="img-prev" onclick="openImage(this.src)">
+                        </div>
+                        <div class="sobre-content">
+                            <span class="sobre-tag">NOSSA MISSÃO</span>
+                            <h2>Transformação Real, com Disciplina e Consistência</h2>
+
+                            <p>
+                                <strong>
+                                    Oferecemos suplementos confiáveis, acessíveis e eficazes, 
+                                </strong>
+                                ajudando cada cliente a evoluir fisicamente e mentalmente.
+                            </p>
+                            <p>
+                                Acreditamos que <strong>disciplina + orientação + suplementação correta = transformação real</strong>. Por isso, buscamos trabalhar apenas com produtos de qualidade comprovada, garantindo que cada cliente tenha acesso ao que realmente funciona.  Mais do que comercializar suplementos, queremos ser um ponto de apoio na jornada de cada pessoa que decide mudar. Evolução exige foco, persistência e as ferramentas certas.
+                            </p>
+
+                            
+                            <p>Na Metamorphose Fit, nossa missão também é:</p>
+
+                            <ul class="sobre-beneficios">
+                                <li>Incentivar hábitos saudáveis e mentalidade forte;</li>
+                                <li>Orientar nossos clientes na escolha adequada dos suplementos;</li>
+                                <li>Tornar a suplementação de qualidade mais acessível;</li>
+                                <li>Construir uma comunidade baseada em disciplina e superação.</li>
+                            </ul>
+
+                            <p>
+                                Acreditamos que a verdadeira transformação começa na mente e se reflete no corpo. Estamos aqui para acompanhar cada etapa desse processo — da decisão inicial até a conquista dos resultados.
+                            </p>
+                        </div>
+                </div> 
+                <div class="item">
+                        <div class="sobre-image">
+                            <img src="{{url_for('static', filename = 'img/quem-somos-1.png')}}" alt="Visão Metamorphose Fit" class="img-prev" onclick="openImage(this.src)">
+                        </div>
+                        <div class="sobre-content">
+                            <span class="sobre-tag">NOSSA VISÃO</span>
+                            <h2>Ser Referência em Performance e Evolução</h2>
+
+                            <p>
+                                <strong>
+                                Ser referência em suplementos em Moçambique,
+                                </strong>
+                                reconhecida pela qualidade dos produtos, atendimento rápido e compromisso real com resultados.
+                            </p>
+                            <p>
+                                Nossa visão vai além de vender suplementos. Queremos construir uma marca sólida, confiável e respeitada, lembrada sempre que o assunto for performance, evolução física e transformação real.
+                            </p>
+
+                            <p>
+                                Buscamos crescimento contínuo, inovação constante e proximidade com nossos clientes. Queremos ser a primeira escolha de quem decide levar seus treinos a sério — seja iniciante ou atleta experiente.
+                            </p>
+
+                            <p>A Metamorphose Fit pretende expandir, evoluir e fortalecer sua presença no mercado, sempre mantendo os pilares que nos definem:</p>
+
+                            <ul class="sobre-beneficios">
+                                <li>Qualidade acima de tudo;</li>
+                                <li>Transparência nas recomendações;</li>
+                                <li>Atendimento humanizado;</li>
+                                <li>Foco total nos resultados do cliente.</li>
+                            </ul>
+
+                            <p>
+                                Nosso objetivo é criar não apenas clientes, mas uma comunidade de pessoas disciplinadas, determinadas e focadas em evolução.
+                            </p>
+                        </div>
+                </div>
+                <div class="item">
+                        <div class="sobre-image">
+                            <img src="{{url_for('static', filename = 'img/quem-somos-1.png')}}" alt="Compromisso Metamorphose Fit" class="img-prev" onclick="openImage(this.src)">
+                        </div>
+                        <div class="sobre-content">
+                            <span class="sobre-tag">NOSSO COMPROMISSO</span>
+                            <h2>A Sua Transformação é a Nossa Responsabilidade</h2>
+                            <p>
+                                Cada cliente que confia na Metamorphose Fit faz parte da nossa comunidade de evolução — formada por pessoas que decidiram sair da zona de conforto e assumir o controle dos seus resultados.
+                            </p>
+
+                            <p>
+                                Nosso compromisso começa na qualidade dos produtos que oferecemos, mas vai muito além disso. Estamos comprometidos em:
+                            </p>
+
+                            <ul class="sobre-beneficios">
+                                <li>Indicar apenas o que realmente agrega valor ao seu objetivo;</li>
+                                <li>Trabalhar com transparência e honestidade;</li>
+                                <li>Oferecer suporte antes, durante e depois da compra;</li>
+                                <li>Incentivar hábitos saudáveis e mentalidade forte.</li>
+                            </ul>
+
+                            <p>
+                                Sabemos que cada corpo é diferente, cada meta é única e cada jornada tem seus desafios. Não acreditamos em soluções mágicas — acreditamos em consistência, estratégia e dedicação.
+                                Tratamos cada cliente com respeito, responsabilidade e seriedade. Porque entendemos que por trás de cada pedido existe uma meta, um sonho e uma decisão de mudar.
+                            </p>
+
+                            
+                            
+
+                            <p>
+                                Estamos aqui para caminhar junto com você — da primeira escolha até a conquista dos resultados.
+                                <strong>A sua transformação é o nosso compromisso.</strong>
+                            </p>
+                        </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <button id="prev">&lt;</button>
+                <button id="next">&gt;</button>
+            </div>
+            <ul class="dots">
+                <li class="active"></li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>  
+        </div>
+        <div id="imageModal" class="modal">
+            <span class="close" onclick="closeImage()">&times;</span>
+            <img class="modal-content" id="modalImg">
+            <a class="download-btn" id="downloadBtn"> Baixar Imagem</a>
+        </div>
+    </section>
+
+    <!--Teste Produtos-->
+    <section class="product-section" id="product-section">
+        <div class="products">
+            <h2>NOSSOS PRODUTOS</h2>
+        </div>
+        <div class="section-content">
+            <ul class="product-list">
+                <li class="product-item">
+                    <div class="product-fade">
+                        <img src="{{url_for('static', filename = 'img/fastgrow_4kg-removebg-preview.png')}}" alt="hipercalórico" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/hyperbolic_4kg-removebg-preview.png')}}" alt="hipercalórico" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/hulkgainer_4kg-removebg-preview.png')}}" alt="hipercalórico" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/hypergainer_4kg-removebg-preview.png')}}" alt="hipercalórico" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/anabolicmuscle_4kg-removebg-preview.png')}}" alt="hipercalórico" class="product-image">
+                    </div>
+                    <h3 class="name">Hipercalóricos</h3>
+                    <p class="text">Suplemento para ganho de massa, aumento de peso</p>
+                    <a href="{{ url_for('main.categoria', categoria='hipercalorico') }}" class="product-btn">Ver mais &#8594;</a>
+                </li>
+                <li class="product-item">
+                    <div class="product-fade">
+                        <img src="{{url_for('static', filename = 'img/whey_908gr-removebg-preview.png' )}}" alt="proteína" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/wheybluelab_908gr-removebg-preview.png')}}" alt="proteína" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/wheyhydrotech_900gr-removebg-preview.png')}}" alt="proteína" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/wheyisolate_750gr-removebg-preview.png')}}" alt="proteína" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/wheyplatinum_1kg-removebg-preview.png')}}" alt="proteína" class="product-image">
+                    </div>
+                    <h3 class="name">Proteínas</h3>
+                    <p class="text">Suplemento para ganho de massa, aumento de peso</p>
+                    <a href="{{ url_for('main.categoria', categoria='proteina') }}" class="product-btn">Ver mais &#8594;</a>
+                </li>
+                <li class="product-item">
+                    <div class="product-fade">
+                        <img src="{{url_for('static', filename = 'img/creatine3in1_200gr-removebg-preview.png')}}" alt="creatina" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/creatinenutritech_300gr-removebg-preview.png')}}" alt="creatina" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/ssacreatine200gr-removebg-preview.png')}}" alt="creatina" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/creatineusn_200gr-removebg-preview.png')}}" alt="creatina" class="product-image">
+                        <img src="{{url_for('static', filename = 'img/creatinetransport_650gr-removebg-preview.png')}}" alt="creatina" class="product-image">
+                    </div>
+                    <h3 class="name">Creatinas</h3>
+                    <p class="text">Suplemento para ganho de massa, aumento de peso</p>
+                    <a href="{{ url_for('main.categoria', categoria='creatina') }}" class="product-btn">Ver mais &#8594;</a>
+                </li>
+            </ul>
+        </div>
+    </section>
+
+     <!--Testimonials Section-->
+    <section class="testimonials-section" id="testimonials-section">
+        <div class="testimonial-text">
+            <h2>TESTEMUNHOS</h2>
+            <p>Agradecemos pela confiança e pela parceria contínua. Juntos, estamos construindo um futuro mais forte,<br/> saudável e cheio de energia no mundo da nutrição e do fitness.</p>
+        </div>
+        <div class="section-content">
+            <div class="slider-container swiper">
+                <div class="slider-wrapper ">
+                    <ul class="testimonials-list swiper-wrapper">
+                        <li class="testimonial swiper-slide">
+                            <img src="{{url_for('static', filename = 'img/testemunho1.png')}}" alt="" class="user-image">
+                            <h3 class="name">Teddy</h3>
+                            <i class="feedback">"Atendimento muito profissional e produtos originais. Recomendo totalmente!"</i>
+                        </li>
+                        <li class="testimonial swiper-slide">
+                            <img src="{{url_for('static', filename = 'img/testemunho2.png')}}" alt="" class="user-image">
+                            <h3 class="name">Iza</h3>
+                            <i class="feedback">"Finalmente encontrei uma loja em que posso confiar. Já virei cliente fiel."</i>
+                        </li><li class="testimonial swiper-slide">
+                            <img src="{{url_for('static', filename = 'img/testemunho3.png')}}" alt="" class="user-image">
+                            <h3 class="name">Carlos & Rita</h3>
+                            <i class="feedback">"Estamos conseguindo treinar mais vezes sem ficar tão cansado. Excelente qualidade!"</i>
+                        </li>
+                        <li class="testimonial swiper-slide">
+                            <img src="{{url_for('static', filename = 'img/testemunho4.png')}}" alt="" class="user-image">
+                            <h3 class="name">Erza</h3>
+                            <i class="feedback">"Além dos produtos serem bons, a equipa explica como usar corretamente os suplementos."</i>
+                        </li>
+                        <li class="testimonial swiper-slide">
+                            <img src="{{url_for('static', filename = 'img/testemunho5.png')}}" alt="" class="user-image">
+                            <h3 class="name">Jean & Grey</h3>
+                            <i class="feedback">"Comecei a usar creatina recomendada pela Metamorphose Fit e minha força aumentou muito"</i>
+                        </li>
+                    </ul>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-slide-button swiper-button-prev"></div>
+                    <div class="swiper-slide-button swiper-button-next"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--Contact Section-->
+    <section class="contact-section" id="contact-section">
+        <div class="contact">
+            <h2>CONTACTE-NOS</h2>
+        </div>
+        <div class="contact-content">
+            <ul class="contact-info-list">
+                <li class="contact-info">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <p>Maputo, Av. Base Ntchinga - Coop</p>
+                </li>
+                <li class="contact-info">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <p>Matola, Fomento - Builders</p>
+                </li>
+                <li class="contact-info">
+                    <i class="fa-solid fa-envelope"></i>
+                    <p>info@metamorphosefit.com</p>
+                </li>
+                <li class="contact-info">
+                    <i class="fa-solid fa-phone"></i>
+                    <p>(+258) 845421616 / 875421616</p>
+                </li>
+                <li class="contact-info">
+                    <i class="fa-solid fa-clock"></i>
+                    <p>Segunda - Domingo: 09:00 - 17:00</p>
+                </li>
+            </ul>
+            <div class="contact-container">
+
+                <h2>Fale Connosco</h2>
+                <p>Não encontrou o suplemento que procura?<br/> Envie-nos uma mensagem.</p>
+
+                <form class="contact-form" id="contactForm">
+
+                    <div class="input-group">
+                        <label>Nome</label>
+                        <input type="text" id="nome" placeholder="Seu nome completo" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Contacto</label>
+                        <input type="tel" id="contactoCliente" placeholder="Seu número de telefone" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Qual suplemento procura?</label>
+                        <textarea 
+                            id="mensagem" 
+                            rows="4" 
+                            placeholder="Ex: Whey Protein, Creatina, marca específica, objectivo, etc..."
+                            maxlength="300"
+                            required></textarea>
+                        <small id="contador">0 / 300</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Anexar imagem do suplemento (opcional)</label>
+                        <input type="file" id="imagem" accept="image/*">
+                    </div>
+
+                    <button type="submit" class="btn-enviar">
+                        Enviar Pedido
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section class="chat-section">
+        <div class="chat-button" onclick="toggleChat()">
+            💬
+        </div>
+        <div class="chat-box" id="chatBox">            
+            <div class="chat-header">
+                Metamorphose Fit
+                <span onclick="toggleChat()">✖</span>
+            </div>
+            <div class="chat-body" id="chatBody">
+                <div class="bot-message">
+                    Olá 👋 Como podemos ajudar você hoje?
+                </div>
+            </div>
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+                <button onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+    </section>
+    
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}
+
+

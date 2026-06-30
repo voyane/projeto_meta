@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}
+Carrinho
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/cart.css') }}">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+    <div class="cart-page">
+
+        <!-- BREADCRUMB -->
+        <div class="breadcrumb-container">
+            <nav class="breadcrumb">
+
+                <a href="{{ url_for('main.index') }}">
+                    <i class="fa-solid fa-house"></i>
+                    Home
+                </a>
+
+                <span class="separator">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </span>
+
+                <a href="{{ url_for('main.index') }}#product-section">
+                    Produtos
+                </a>
+
+                <span class="separator">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </span>
+
+                <span class="current-page">
+                    Carrinho
+                </span>
+
+            </nav>
+        </div>
+
+        <div class="cart-header">
+            <h1>
+                <i class="fa-solid fa-cart-shopping"></i>
+                Meu Carrinho
+            </h1>
+        </div>
+
+        {% if cart.items %}
+
+            <div class="cart-layout">
+
+                <div class="cart-products">
+
+                    {% for item in cart.items %}
+                    <div class="cart-item">
+
+                        <div class="product-image">
+                            <img src="{{ url_for('static', filename=item.produto.imagem) }}"
+                                alt="{{ item.produto.nome }}">
+                        </div>
+
+                        <div class="cart-info">
+                            <h3>{{ item.produto.nome }}</h3>
+
+                            <p class="price">
+                                {{ "%.2f"|format(item.produto.preco) }} MT
+                            </p>
+                        </div>
+
+                        <div class="cart-controls">
+
+                            <button class="btn-decrease"
+                                    data-id="{{ item.id }}">
+                                -
+                            </button>
+
+                            <span>{{ item.quantidade }}</span>
+
+                            <button class="btn-increase"
+                                    data-id="{{ item.id }}">
+                                +
+                            </button>
+
+                        </div>
+
+                        <div class="subtotal">
+                            {{ "%.2f"|format(item.produto.preco * item.quantidade) }} MT
+                        </div>
+
+                        <button class="btn-remove"
+                                data-id="{{ item.id }}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <!-- RESUMO -->
+                <div class="cart-summary">
+
+                    <h3>Resumo do Pedido</h3>
+
+                    <div class="summary-line">
+                        <span>Total</span>
+                        <strong>{{ "%.2f"|format(total) }} MT</strong>
+                    </div>
+
+                    <button class="checkout-btn">
+                        Finalizar Pedido
+                    </button>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+        <div class="empty-cart">
+
+            <i class="fa-solid fa-cart-shopping"></i>
+
+            <h2>Seu carrinho está vazio</h2>
+
+            <a href="{{ url_for('main.index') }}"
+            class="continue-shopping">
+                Continuar Comprando
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+{% endblock %}

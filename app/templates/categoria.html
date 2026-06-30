@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}
+Hipercalóricos
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/categoria.css') }}">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb-container">
+        <nav class="breadcrumb">
+
+            <a href="{{ url_for('main.index') }}">
+                <i class="fa-solid fa-house"></i>
+                Home
+            </a>
+
+            <span class="separator">
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
+
+            <a href="{{ url_for('main.index') }}#product-section">
+                Produtos
+            </a>
+
+            <span class="separator">
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
+
+            <span class="current-page">
+                {{ categoria|capitalize }}
+            </span>
+
+        </nav>
+    </div>
+
+    <!--Artigos/Produtos-->
+    <section class="artigo-section" id="product-section">
+        <div class="artigo-title">
+            <h2>NOSSOS ARTIGOS</h2>
+        </div>
+
+        <div class="artigo-container">
+            {% for produto in produtos %}
+            <div class="artigo-card">
+                <!-- FAVORITO -->
+                <div class="favorito" data-id="{{ produto.slug }}">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <!-- IMAGEM: link para detalhes -->
+                <a href="{{ url_for('main.produto_detalhe', slug=produto.slug) }}">
+                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}">
+                </a>
+               
+                <div class="artigo-info">
+                    <p class="price-artigo">
+                        {{ "%.2f"|format(produto.preco) }} MT
+                    </p>
+                    <h3>{{ produto.nome }}</h3>
+
+                    <!-- RATING -->
+                    <div class="rating" data-produto="{{ produto.id }}">
+                        {% set rating = produto.media_rating|default(0)|float %}
+                        {% for i in range(1, 6) %}
+                            <i class="fa-solid fa-star {% if i <= rating|round(0, 'floor') %}active{% endif %}" data-star="{{ i }}"></i>
+                        {% endfor %}
+                        <span class="media-rating">
+                            {% if rating > 0 %}
+                                ⭐ {{ rating|round(1) }}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- CARRINHO -->
+                <button class="cart-btn" data-id="{{ produto.slug }}">
+                    Adicionar
+                    <i class="fa-solid fa-cart-shopping"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!--Chat-->
+    <section class="chat-section">
+        <div class="chat-button" onclick="toggleChat()">💬</div>
+
+        <div class="chat-box" id="chatBox">
+            <div class="chat-header">
+                Metamorphose Fit
+                <span onclick="toggleChat()">✖</span>
+            </div>
+
+            <div class="chat-body" id="chatBody">
+                <div class="bot-message">
+                    Olá 👋 Como podemos ajudar você hoje?
+                </div>
+            </div>
+
+            <div class="chat-footer">
+                <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
+                <button onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+    </section>
+
+    <!--Cart Drawer-->
+    <div class="cart-drawer" id="cartDrawer">
+
+        <div class="cart-header">
+            <h3>Seu Carrinho</h3>
+            <i class="fa-solid fa-xmark" id="closeCart"></i>
+        </div>
+
+        <div class="cart-items" id="cartItems"></div>
+
+        <div class="cart-footer">
+            <h4>Total: <span id="cartTotal">0 MT</span></h4>
+            <button id="checkoutBtn">Finalizar Pedido</button>
+        </div>
+
+    </div>
+
+    <div id="toast"></div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

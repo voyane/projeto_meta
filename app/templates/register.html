@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+<title>Cadastro</title>
+</head>
+<body>
+<div class="register-container">
+    <h3>CADASTRO</h3>
+
+    <form action="{{ url_for('main.register') }}" method="POST">
+      <input type="text" name="name" placeholder="Digite seu nome" required>
+      <input type="email" name="email" placeholder="Digite seu email" required>
+      <input type="tel" name="phone" placeholder="Digite seu telefone" required>
+
+      <div class="password-box">
+          <input type="password" name="password" id="password" placeholder="Digite a senha" required>
+          <i class="fa-solid fa-eye" id="togglePassword"></i>
+      </div>
+
+      <button type="submit">Cadastrar</button>
+  </form>
+
+    <p>Já tem conta? <a href="{{ url_for('main.login') }}">Login</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="error {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+</div>
+
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+</body>
+</html>

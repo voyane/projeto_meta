@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>Entrar</h2>
+        <!-- Mensagens flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" class="login-form">
+            <!-- mantém página anterior -->
+            <input type="hidden" name="next" value="{{ next or url_for('main.index') }}">
+            <input type="email" name="email" placeholder="Digite o Email" required>
+            <div class="password-box">
+                <input type="password" name="password" id="password" placeholder="Senha" required>
+
+                <i class="fa-solid fa-eye" id="togglePassword"></i>
+            </div>
+
+            <div class="login-options">
+
+                <label class="remember">
+                    <input type="checkbox" name="remember">
+                    Lembrar-me
+                </label>
+
+                <a href="{{ url_for('main.forgot_password') }}" class="forgot-password">
+                    Esqueceu a senha?
+                </a>
+
+            </div>
+
+            <button type="submit" class="btn-login">
+                Login
+            </button>
+        </form>
+        <p class="register-text">
+            Não tem conta? <a href="{{ url_for('main.register') }}">Cadastre-se</a>
+        </p>
+    </div>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>

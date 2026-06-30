@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ produto.nome }}
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/produto.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb-container">
+        <nav class="breadcrumb">
+
+            <a href="{{ url_for('main.index') }}">
+                <i class="fa-solid fa-house"></i>
+                Home
+            </a>
+
+            <span class="separator">
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
+
+            <a href="{{ url_for('main.index') }}#product-section">
+                Produtos
+            </a>
+
+            <span class="separator">
+                <i class="fa-solid fa-chevron-right"></i>
+            </span>
+
+            <span class="current-page">
+                {{ produto.nome }}
+            </span>
+
+        </nav>
+    </div>
+    <section class="produto-detalhe-container">
+
+        <!-- Imagem do produto -->
+        <div class="produto-imagem">
+            <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}">
+
+            <!-- Informações abaixo da imagem -->
+            <p class="produto-preco">{{ "%.2f"|format(produto.preco) }} MT</p>
+            <p class="produto-categoria"><strong>Categoria:</strong> {{ produto.categoria }}</p>
+
+            <!-- Rating -->
+            <div class="rating" data-produto="{{ produto.id }}">
+                {% set rating = produto.media_rating|default(0)|float %}
+                {% for i in range(1, 6) %}
+                    <i class="fa-solid fa-star {% if i <= rating|round(0, 'floor') %}active{% endif %}" data-star="{{ i }}"></i>
+                {% endfor %}
+                <span class="media-rating">
+                    {% if rating > 0 %}
+                        ⭐ {{ rating|round(1) }}
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Descrição e botão -->
+        <div class="produto-info">
+            <h2>{{ produto.nome }}</h2>
+            <div class="produto-descricao">
+                {{ produto.descricao|safe }}
+            </div>
+
+            <button onclick="comprarWhatsapp('{{ produto.nome }}')" class="cart-btn">
+                Comprar via WhatsApp
+                <i class="fa-brands fa-whatsapp"></i>
+            </button>
+        </div>
+
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}
