@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Produtos Admin{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header">
+        <h1>Produtos</h1>
+        <a href="{{ url_for('admin.novo_produto') }}" class="admin-btn">
+            + Novo Produto
+        </a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>Imagem</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for produto in produtos %}
+            <tr>
+                <td>
+                    {% if produto.imagem %}
+                        <img src="{{ url_for('static', filename=produto.imagem) }}" width="70">
+                    {% endif %}
+                </td>
+
+                <td>{{ produto.nome }}</td>
+                <td>{{ produto.categoria }}</td>
+                <td>{{ "%.2f"|format(produto.preco) }} MT</td>
+
+                <td>
+                    <a href="{{ url_for('admin.editar_produto', id=produto.id) }}">
+                        Editar
+                    </a>
+
+                    <form method="POST"
+                          action="{{ url_for('admin.apagar_produto', id=produto.id) }}"
+                          style="display:inline;">
+                        <button type="submit"
+                                onclick="return confirm('Deseja apagar este produto?')">
+                            Apagar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</section>
+
+{% endblock %}

@@ -11,6 +11,8 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
+
+    is_admin = db.Column(db.Boolean, default=False)
     
     reset_code = db.Column(db.String(6), nullable=True)
     reset_code_expires = db.Column(db.DateTime, nullable=True)
@@ -41,6 +43,17 @@ class Produto(db.Model):
     descricao = db.Column(db.Text, nullable=True)
     categoria = db.Column(db.String(100), nullable=True)
     ratings = db.relationship('Rating', backref='produto', lazy=True)
+
+    preco_antigo = db.Column(db.Float, nullable=True)
+    desconto = db.Column(db.Integer, nullable=True)
+    promocao = db.Column(db.Boolean, default=False)
+    destaque = db.Column(db.Boolean, default=False)
+    ativo = db.Column(db.Boolean, default=True)
+
+    stock = db.Column(db.Integer, default=0)
+
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
         return {

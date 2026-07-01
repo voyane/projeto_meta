@@ -28,9 +28,16 @@ def enviar_whatsapp(phone, code):
         return True
 
     except Exception as e:
-        print("=" * 60)
-        print("Erro ao enviar WhatsApp:", e)
-        print("Código:", code)
-        print("Telefone:", phone)
-        print("=" * 60)
+        print("=" * 80)
+        print("ERRO COMPLETO")
+        print(type(e))
+        print(e)
+
+        if hasattr(e, "msg"):
+            print("Mensagem:", e.msg)
+
+        if hasattr(e, "code"):
+            print("Código:", e.code)
+
+        print("=" * 80)
         return False

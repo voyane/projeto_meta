@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if produto %}Editar Produto{% else %}Novo Produto{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-form-page">
+
+    <h1>
+        {% if produto %}
+            Editar Produto
+        {% else %}
+            Novo Produto
+        {% endif %}
+    </h1>
+
+    <form method="POST" enctype="multipart/form-data" class="admin-form">
+
+        <input type="text"
+               name="nome"
+               placeholder="Nome do produto"
+               value="{{ produto.nome if produto else '' }}"
+               required>
+
+        <select name="categoria" required>
+            <option value="">Selecionar categoria</option>
+
+            <option value="hipercalorico"
+                {% if produto and produto.categoria == 'hipercalorico' %}selected{% endif %}>
+                Hipercalórico
+            </option>
+
+            <option value="proteina"
+                {% if produto and produto.categoria == 'proteina' %}selected{% endif %}>
+                Proteína
+            </option>
+
+            <option value="creatina"
+                {% if produto and produto.categoria == 'creatina' %}selected{% endif %}>
+                Creatina
+            </option>
+        </select>
+
+        <input type="number"
+               step="0.01"
+               name="preco"
+               placeholder="Preço"
+               value="{{ produto.preco if produto else '' }}"
+               required>
+
+        <textarea name="descricao"
+                  rows="8"
+                  placeholder="Descrição do produto">{{ produto.descricao if produto else '' }}</textarea>
+
+        <input type="file" name="imagem" accept="image/*">
+
+        {% if produto and produto.imagem %}
+            <img src="{{ url_for('static', filename=produto.imagem) }}" width="120">
+        {% endif %}
+
+        <button type="submit">
+            Guardar Produto
+        </button>
+
+    </form>
+
+</section>
+
+{% endblock %}

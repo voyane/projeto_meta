@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header">
+        <h1>Bem-vindo, Admin {{ current_user.name }}!</h1>
+        <p>Aqui você pode gerenciar produtos, preços, promoções e pedidos.</p>
+    </div>
+
+    <div class="admin-cards">
+
+        <a href="{{ url_for('admin.produtos') }}" class="admin-card">
+            <h3>Produtos</h3>
+            <p>Adicionar, editar preços, descrições, descontos e promoções.</p>
+        </a>
+
+        <a href="#" class="admin-card">
+            <h3>Pedidos</h3>
+            <p>Ver pedidos feitos pelos clientes.</p>
+        </a>
+
+        <a href="#" class="admin-card">
+            <h3>Usuários</h3>
+            <p>Gerenciar clientes cadastrados.</p>
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -394,26 +394,3 @@ def get_or_create_cart(user):
 
     return cart
 
-#===================ENVIAR CODIGO POR SMS=======================
-def enviar_sms_codigo(phone, code):
-    sid = current_app.config.get("TWILIO_ACCOUNT_SID")
-    token = current_app.config.get("TWILIO_AUTH_TOKEN")
-    from_number = current_app.config.get("TWILIO_PHONE_NUMBER")
-
-    if not sid or not token or not from_number:
-        print("Twilio não configurado.")
-        print("Código:", code)
-        return False
-
-    client = Client(sid, token)
-
-    destino = f"+258{phone}"
-
-    message = client.messages.create(
-        body=f"Metamorphose Fit: seu código é {code}. Expira em 10 minutos.",
-        from_=from_number,
-        to=destino
-    )
-
-    print("SMS enviado:", message.sid)
-    return True

@@ -3,6 +3,7 @@
 from flask import Flask
 from config import Config
 from .extensions import db, login_manager, migrate, mail
+from .admin.routes import admin
 
 
 def create_app():
@@ -26,6 +27,7 @@ def create_app():
     from .routes import main
     app.register_blueprint(main)
     app.register_blueprint(cart_bp)
+    app.register_blueprint(admin)
 
     return app
 

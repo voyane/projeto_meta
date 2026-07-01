@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin{% endblock %}
+
+{% block content %}
+
+<section class="admin-dashboard">
+
+    <div class="dashboard-header">
+        <div>
+            <h1>Painel Administrativo</h1>
+            <p>Bem-vindo, {{ current_user.name }}. Gerencie a Metamorphose Fit.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-cards">
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-box"></i>
+            <div>
+                <h3>{{ total_produtos }}</h3>
+                <p>Produtos</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-users"></i>
+            <div>
+                <h3>{{ total_users }}</h3>
+                <p>Clientes</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <div>
+                <h3>{{ total_carrinhos }}</h3>
+                <p>Carrinhos</p>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-star"></i>
+            <div>
+                <h3>{{ total_avaliacoes }}</h3>
+                <p>Avaliações</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="dashboard-actions">
+
+        <a href="{{ url_for('admin.produtos') }}" class="action-card">
+            <i class="fa-solid fa-box-open"></i>
+            <h3>Gerir Produtos</h3>
+            <p>Adicionar, editar preços, descontos e descrições.</p>
+        </a>
+
+        <a href="#" class="action-card">
+            <i class="fa-solid fa-receipt"></i>
+            <h3>Pedidos</h3>
+            <p>Ver e acompanhar pedidos dos clientes.</p>
+        </a>
+
+        <a href="#" class="action-card">
+            <i class="fa-solid fa-tags"></i>
+            <h3>Promoções</h3>
+            <p>Criar campanhas, descontos e destaques.</p>
+        </a>
+
+    </div>
+
+</section>
+
+{% endblock %}
