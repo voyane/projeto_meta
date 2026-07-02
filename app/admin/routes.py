@@ -6,11 +6,34 @@ from app.models import Produto, User, Cart, Rating
 import os
 import re
 
+
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
 
 def admin_required():
     return current_user.is_authenticated and current_user.is_admin
+
+
+def gerar_slug(nome):
+    slug = nome.lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    return slug.strip("-")
+
+
+def salvar_imagem(imagem_file):
+    if not imagem_file or not imagem_file.filename:
+        return None
+
+    filename = secure_filename(imagem_file.filename)
+
+    pasta = os.path.join("app", "static", "img", "produtos")
+    os.makedirs(pasta, exist_ok=True)
+
+    caminho = os.path.join(pasta, filename)
+    imagem_file.save(caminho)
+
+    return f"img/produtos/{filename}"
+
 
 @admin.route("/")
 @login_required
@@ -19,23 +42,13 @@ def dashboard():
         flash("Acesso negado.", "danger")
         return redirect(url_for("main.index"))
 
-    total_produtos = Produto.query.count()
-    total_users = User.query.count()
-    total_carrinhos = Cart.query.count()
-    total_avaliacoes = Rating.query.count()
-
     return render_template(
         "admin/dashboard.html",
-        total_produtos=total_produtos,
-        total_users=total_users,
-        total_carrinhos=total_carrinhos,
-        total_avaliacoes=total_avaliacoes
-    ) 
-
-def gerar_slug(nome):
-    slug = nome.lower()
-    slug = re.sub(r"[^a-z0-9]+", "-", slug)
-    return slug.strip("-")
+        total_produtos=Produto.query.count(),
+        total_users=User.query.count(),
+        total_carrinhos=Cart.query.count(),
+        total_avaliacoes=Rating.query.count()
+    )
 
 
 @admin.route("/produtos")
@@ -57,40 +70,21 @@ def novo_produto():
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
-        nome = request.form.get("nome")
-        preco = float(request.form.get("preco"))
-        preco_antigo = request.form.get("preco_antigo") or None
-        desconto = request.form.get("desconto") or None
-        categoria = request.form.get("categoria")
-        descricao = request.form.get("descricao")
-        stock = int(request.form.get("stock") or 0)
-
-        promocao = request.form.get("promocao") == "on"
-        destaque = request.form.get("destaque") == "on"
-        ativo = request.form.get("ativo") == "on"
-
-        imagem_file = request.files.get("imagem")
-        imagem_path = ""
-
-        if imagem_file and imagem_file.filename:
-            filename = secure_filename(imagem_file.filename)
-            upload_path = os.path.join("app/static/img/produtos", filename)
-            imagem_file.save(upload_path)
-            imagem_path = f"img/produtos/{filename}"
+        imagem_path = salvar_imagem(request.files.get("imagem"))
 
         produto = Produto(
-            nome=nome,
-            slug=gerar_slug(nome),
-            preco=preco,
-            preco_antigo=float(preco_antigo) if preco_antigo else None,
-            desconto=int(desconto) if desconto else None,
-            categoria=categoria,
-            descricao=descricao,
-            imagem=imagem_path,
-            stock=stock,
-            promocao=promocao,
-            destaque=destaque,
-            ativo=ativo
+            nome=request.form.get("nome"),
+            slug=gerar_slug(request.form.get("nome")),
+            preco=float(request.form.get("preco")),
+            preco_antigo=float(request.form.get("preco_antigo")) if request.form.get("preco_antigo") else None,
+            desconto=int(request.form.get("desconto")) if request.form.get("desconto") else None,
+            categoria=request.form.get("categoria"),
+            descricao=request.form.get("descricao"),
+            imagem=imagem_path or "",
+            stock=int(request.form.get("stock") or 0),
+            promocao=request.form.get("promocao") == "on",
+            destaque=request.form.get("destaque") == "on",
+            ativo=request.form.get("ativo") == "on"
         )
 
         db.session.add(produto)
@@ -120,18 +114,14 @@ def editar_produto(id):
         produto.categoria = request.form.get("categoria")
         produto.descricao = request.form.get("descricao")
         produto.stock = int(request.form.get("stock") or 0)
-
         produto.promocao = request.form.get("promocao") == "on"
         produto.destaque = request.form.get("destaque") == "on"
         produto.ativo = request.form.get("ativo") == "on"
 
-        imagem_file = request.files.get("imagem")
+        nova_imagem = salvar_imagem(request.files.get("imagem"))
 
-        if imagem_file and imagem_file.filename:
-            filename = secure_filename(imagem_file.filename)
-            upload_path = os.path.join("app/static/img/produtos", filename)
-            imagem_file.save(upload_path)
-            produto.imagem = f"img/produtos/{filename}"
+        if nova_imagem:
+            produto.imagem = nova_imagem
 
         db.session.commit()
 
@@ -149,6 +139,7 @@ def apagar_produto(id):
         return redirect(url_for("main.index"))
 
     produto = Produto.query.get_or_404(id)
+
     db.session.delete(produto)
     db.session.commit()
 

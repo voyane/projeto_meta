@@ -1,90 +1,125 @@
 <nav class="navbar">
+
     <div class="logo">
         <a href="{{ url_for('main.index') }}" class="nav-logo">
-            <img src="{{ url_for('static', filename='img/meta_logo-removebg-preview.png') }}" class="nav-image">
+            <img src="{{ url_for('static', filename='img/meta_logo-removebg-preview.png') }}"
+                 class="nav-image"
+                 alt="Metamorphose Fit">
         </a>
     </div>
 
-    <ul class="nav-menu">
+    <div class="menu-bars" id="menu-bars">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+
+    <ul class="nav-menu" id="nav-menu">
 
         <li class="nav-item">
             <a href="{{ url_for('main.index') }}" class="nav-link">HOME</a>
         </li>
+
         <li class="nav-item">
             <a href="{{ url_for('main.index') }}#about-section" class="nav-link">SOBRE</a>
         </li>
+
         <li class="nav-item">
-            <a href="{{ url_for('main.index') }}#product-section"class="nav-link">PRODUTOS</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.index') }}#testimonials-section"class="nav-link">TESTEMUNHOS</a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ url_for('main.index') }}#contact-section"class="nav-link">CONTACTO</a>
+            <a href="{{ url_for('main.index') }}#product-section" class="nav-link">PRODUTOS</a>
         </li>
 
-        <!-- CARRINHO -->
+        <li class="nav-item">
+            <a href="{{ url_for('main.index') }}#testimonials-section" class="nav-link">TESTEMUNHOS</a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ url_for('main.index') }}#contact-section" class="nav-link">CONTACTO</a>
+        </li>
+
         <li class="cart-icon">
             <a href="{{ url_for('cart.view_cart') }}">
-            <i class="fa-solid fa-cart-shopping"></i>
+                <i class="fa-solid fa-cart-shopping"></i>
             </a>
         </li>
-        <!-- USER -->
-        <li class="user-menu">
 
         {% if current_user.is_authenticated %}
 
-            <div class="user-dropdown">
+            {% if current_user.is_admin %}
+            <li class="admin-menu">
+                <div class="admin-dropdown">
+                    <div class="admin-trigger">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span>Admin</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </div>
 
-                <div class="user-trigger">
-                    <i class="fa-solid fa-user"></i>
+                    <div class="admin-dropdown-menu">
+                        <a href="{{ url_for('admin.dashboard') }}">
+                            <i class="fa-solid fa-chart-line"></i> Dashboard
+                        </a>
 
-                    <span>
-                        <span>{{ current_user.name or current_user.email }}</span>
-                    </span>
+                        <a href="{{ url_for('admin.produtos') }}">
+                            <i class="fa-solid fa-box"></i> Produtos
+                        </a>
 
-                    <i class="fa-solid fa-chevron-down arrow"></i>
+                        <a href="#">
+                            <i class="fa-solid fa-tags"></i> Categorias
+                        </a>
+
+                        <a href="#">
+                            <i class="fa-solid fa-percent"></i> Promoções
+                        </a>
+
+                        <a href="#">
+                            <i class="fa-solid fa-users"></i> Clientes
+                        </a>
+
+                        <a href="#">
+                            <i class="fa-solid fa-receipt"></i> Pedidos
+                        </a>
+                    </div>
                 </div>
+            </li>
+            {% endif %}
 
-                <div class="dropdown-menu">
-
-                    <a href="#">
+            <li class="user-menu">
+                <div class="user-dropdown">
+                    <div class="user-trigger">
                         <i class="fa-solid fa-user"></i>
-                        Perfil
-                    </a>
+                        <span>{{ current_user.name or current_user.email }}</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </div>
 
-                    <a href="{{ url_for('cart.view_cart') }}">
-                        <i class="fa-solid fa-cart-shopping"></i>
-                        Carrinho
-                    </a>
+                    <div class="user-dropdown-menu">
+                        <a href="#">
+                            <i class="fa-solid fa-user"></i> Perfil
+                        </a>
 
-                    <a href="#">
-                        <i class="fa-solid fa-box"></i>
-                        Pedidos
-                    </a>
+                        <a href="{{ url_for('cart.view_cart') }}">
+                            <i class="fa-solid fa-cart-shopping"></i> Carrinho
+                        </a>
 
-                    <hr>
+                        <a href="#">
+                            <i class="fa-solid fa-box"></i> Meus Pedidos
+                        </a>
 
-                    <a href="{{ url_for('main.logout') }}" class="logout">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        Logout
-                    </a>
+                        <hr>
 
+                        <a href="{{ url_for('main.logout') }}" class="logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </a>
+                    </div>
                 </div>
-
-            </div>
+            </li>
 
         {% else %}
 
-            <a href="{{ url_for('main.login', next=request.path) }}"
-            class="login-btn">
-                <i class="fa-solid fa-user"></i>
-                Login
-            </a>
+            <li>
+                <a href="{{ url_for('main.login', next=request.path) }}" class="login-btn">
+                    <i class="fa-solid fa-user"></i> Login
+                </a>
+            </li>
 
         {% endif %}
 
-        </li>
-
     </ul>
+
 </nav>
