@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detalhes do Cliente
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header-div">
+
+        <div>
+            <h1>Detalhes do Cliente</h1>
+            <p>Informações completas do utilizador registado.</p>
+        </div>
+
+        <a href="{{ url_for('admin.clientes') }}" class="admin-btn">
+            Voltar
+        </a>
+
+    </div>
+
+    <div class="client-detail-layout">
+
+        <!-- PERFIL -->
+        <div class="client-profile-card">
+
+            <div class="client-profile-avatar">
+                {{ (cliente.name or cliente.email)[0]|upper }}
+            </div>
+
+            <h2>
+                {{ cliente.name or "Sem nome" }}
+            </h2>
+
+            {% if cliente.is_admin %}
+                <span class="status-badge status-admin">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    Administrador
+                </span>
+            {% else %}
+                <span class="status-badge status-client">
+                    <i class="fa-solid fa-user"></i>
+                    Cliente
+                </span>
+            {% endif %}
+
+        </div>
+
+        <!-- INFORMAÇÕES -->
+        <div class="client-info-card">
+
+            <h3>Informações pessoais</h3>
+
+            <div class="client-info-grid">
+
+                <div class="client-info-item">
+                    <span>ID</span>
+                    <strong>#{{ cliente.id }}</strong>
+                </div>
+
+                <div class="client-info-item">
+                    <span>Nome</span>
+                    <strong>{{ cliente.name or "Não informado" }}</strong>
+                </div>
+
+                <div class="client-info-item">
+                    <span>Email</span>
+
+                    <a href="mailto:{{ cliente.email }}">
+                        {{ cliente.email }}
+                    </a>
+                </div>
+
+                <div class="client-info-item">
+                    <span>Telefone</span>
+
+                    {% if cliente.phone %}
+                        <a href="tel:{{ cliente.phone }}">
+                            {{ cliente.phone }}
+                        </a>
+                    {% else %}
+                        <strong>Não informado</strong>
+                    {% endif %}
+                </div>
+
+                <div class="client-info-item">
+                    <span>Tipo de conta</span>
+
+                    <strong>
+                        {% if cliente.is_admin %}
+                            Administrador
+                        {% else %}
+                            Cliente
+                        {% endif %}
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CARRINHO -->
+    <div class="client-section-card">
+
+        <div class="client-section-header">
+            <h3>
+                <i class="fa-solid fa-cart-shopping"></i>
+                Carrinho atual
+            </h3>
+        </div>
+
+        {% if cliente.cart and cliente.cart.items %}
+
+            <div class="admin-table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Quantidade</th>
+                            <th>Preço</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in cliente.cart.items %}
+
+                            <tr>
+                                <td>{{ item.produto.nome }}</td>
+
+                                <td>{{ item.quantidade }}</td>
+
+                                <td>
+                                    {{ "%.2f"|format(item.produto.preco) }} MT
+                                </td>
+
+                                <td>
+                                    {{ "%.2f"|format(item.quantidade * item.produto.preco) }} MT
+                                </td>
+                            </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-table-state">
+
+                <i class="fa-solid fa-cart-arrow-down"></i>
+
+                <h3>Carrinho vazio</h3>
+
+                <p>
+                    Este cliente não possui produtos no carrinho.
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- AÇÕES -->
+    <div class="client-section-card">
+
+        <div class="client-section-header">
+            <h3>
+                <i class="fa-solid fa-gears"></i>
+                Ações administrativas
+            </h3>
+        </div>
+
+        <div class="client-detail-actions">
+
+            {% if cliente.id != current_user.id %}
+
+                <form method="POST"
+                      action="{{ url_for('admin.alternar_admin', id=cliente.id) }}">
+
+                    <button type="submit"
+                            class="client-action-button admin-role-button">
+
+                        {% if cliente.is_admin %}
+                            <i class="fa-solid fa-user-minus"></i>
+                            Remover administrador
+                        {% else %}
+                            <i class="fa-solid fa-user-shield"></i>
+                            Tornar administrador
+                        {% endif %}
+
+                    </button>
+
+                </form>
+
+            {% else %}
+
+                <p class="self-account-warning">
+                    Não podes alterar o teu próprio perfil de administrador.
+                </p>
+
+            {% endif %}
+
+            {% if cliente.phone %}
+
+                <a href="https://wa.me/258{{ cliente.phone|replace(' ', '')|replace('-', '') }}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="client-action-button whatsapp-button">
+
+                    <i class="fa-brands fa-whatsapp"></i>
+                    Contactar pelo WhatsApp
+                </a>
+
+            {% endif %}
+
+            <a href="mailto:{{ cliente.email }}"
+               class="client-action-button email-button">
+
+                <i class="fa-solid fa-envelope"></i>
+                Enviar email
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

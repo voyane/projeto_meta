@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes{% endblock %}
+
+{% block content %}
+<section class="admin-page">
+
+    <div class="admin-header">
+        <div>
+            <h1>Clientes</h1>
+            <p>Gerencie os utilizadores registados na loja.</p>
+        </div>
+    </div>
+
+    <form method="GET"
+          action="{{ url_for('admin.clientes') }}"
+          class="admin-search-form">
+
+        <div class="admin-search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <input
+                type="search"
+                name="q"
+                value="{{ pesquisa or '' }}"
+                placeholder="Pesquisar por nome, email ou telefone">
+        </div>
+
+        <button type="submit" class="admin-search-btn">
+            Pesquisar
+        </button>
+
+        {% if pesquisa %}
+            <a href="{{ url_for('admin.clientes') }}"
+               class="admin-clear-btn">
+                Limpar
+            </a>
+        {% endif %}
+
+    </form>
+
+    <!-- RESUMO -->
+    <div class="client-summary-grid">
+
+        <div class="client-summary-card">
+            <i class="fa-solid fa-users"></i>
+
+            <div>
+                <span>Total de clientes</span>
+                <strong>{{ total_clientes }}</strong>
+            </div>
+        </div>
+
+        <div class="client-summary-card">
+            <i class="fa-solid fa-user-shield"></i>
+
+            <div>
+                <span>Administradores</span>
+                <strong>{{ total_admins }}</strong>
+            </div>
+        </div>
+
+        <div class="client-summary-card">
+            <i class="fa-solid fa-user"></i>
+
+            <div>
+                <span>Clientes comuns</span>
+                <strong>{{ total_clientes_comuns }}</strong>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- TABELA -->
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table client-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>Perfil</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for cliente in clientes %}
+
+                    <tr>
+
+                        <td>
+                            #{{ cliente.id }}
+                        </td>
+
+                        <td>
+                            <div class="client-identity">
+
+                                <div class="client-avatar">
+                                    {{ (cliente.name or cliente.email)[0]|upper }}
+                                </div>
+
+                                <div>
+                                    <strong>
+                                        {{ cliente.name or "Sem nome" }}
+                                    </strong>
+
+                                    <small>
+                                        Registado no sistema
+                                    </small>
+                                </div>
+
+                            </div>
+                        </td>
+
+                        <td>
+                            <a href="mailto:{{ cliente.email }}"
+                               class="client-email">
+                                {{ cliente.email }}
+                            </a>
+                        </td>
+
+                        <td>
+                            {% if cliente.phone %}
+                                <a href="tel:{{ cliente.phone }}">
+                                    {{ cliente.phone }}
+                                </a>
+                            {% else %}
+                                <span class="empty-value">
+                                    Não informado
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if cliente.is_admin %}
+                                <span class="status-badge status-admin">
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                    Administrador
+                                </span>
+                            {% else %}
+                                <span class="status-badge status-client">
+                                    <i class="fa-solid fa-user"></i>
+                                    Cliente
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="client-actions">
+
+                                <a href="{{ url_for('admin.detalhe_cliente', id=cliente.id) }}"
+                                   class="action-btn view-btn"
+                                   title="Ver cliente">
+
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+
+                                {% if cliente.id != current_user.id %}
+
+                                    <form method="POST"
+                                          action="{{ url_for('admin.alternar_admin', id=cliente.id) }}">
+
+                                        <button type="submit"
+                                                class="action-btn admin-toggle-btn"
+                                                title="{% if cliente.is_admin %}Remover administrador{% else %}Tornar administrador{% endif %}">
+
+                                            {% if cliente.is_admin %}
+                                                <i class="fa-solid fa-user-minus"></i>
+                                            {% else %}
+                                                <i class="fa-solid fa-user-shield"></i>
+                                            {% endif %}
+
+                                        </button>
+
+                                    </form>
+
+                                {% endif %}
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-table-state">
+
+                                <i class="fa-solid fa-user-slash"></i>
+
+                                <h3>Nenhum cliente encontrado</h3>
+
+                                <p>
+                                    Tenta pesquisar com outro nome, email ou telefone.
+                                </p>
+
+                            </div>
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- PAGINAÇÃO -->
+    {% if pagination.pages > 1 %}
+
+        <div class="pagination">
+
+            {% if pagination.has_prev %}
+                <a href="{{ url_for(
+                    'admin.clientes',
+                    page=pagination.prev_num,
+                    q=pesquisa
+                ) }}">
+                    Anterior
+                </a>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(
+                left_edge=1,
+                right_edge=1,
+                left_current=2,
+                right_current=2
+            ) %}
+
+                {% if page_num %}
+
+                    {% if page_num == pagination.page %}
+                        <span class="active-page">
+                            {{ page_num }}
+                        </span>
+                    {% else %}
+                        <a href="{{ url_for(
+                            'admin.clientes',
+                            page=page_num,
+                            q=pesquisa
+                        ) }}">
+                            {{ page_num }}
+                        </a>
+                    {% endif %}
+
+                {% else %}
+                    <span>...</span>
+                {% endif %}
+
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for(
+                    'admin.clientes',
+                    page=pagination.next_num,
+                    q=pesquisa
+                ) }}">
+                    Seguinte
+                </a>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

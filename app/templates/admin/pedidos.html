@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+
+{% block title %}Carrinhos dos Clientes{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header">
+        <div>
+            <h1>Carrinhos dos Clientes</h1>
+            <p>Visualize os produtos atualmente adicionados pelos clientes.</p>
+        </div>
+    </div>
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table cart-admin-table">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Produtos</th>
+                    <th>Quantidade total</th>
+                    <th>Valor estimado</th>
+                    <th>Criado em</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for pedido in pedidos %}
+
+                    {% set total_quantidade = pedido.items
+                        | map(attribute='quantidade')
+                        | sum %}
+
+                    {% set total = namespace(valor=0) %}
+
+                    {% for item in pedido.items %}
+                        {% set total.valor = total.valor + (
+                            item.quantidade * item.produto.preco
+                        ) %}
+                    {% endfor %}
+
+                    <tr>
+
+                        <td>#{{ pedido.id }}</td>
+
+                        <td>
+                            {% if pedido.user %}
+                                <div class="pedido-cliente">
+                                    <strong>
+                                        {{ pedido.user.name or pedido.user.email }}
+                                    </strong>
+
+                                    <small>
+                                        {{ pedido.user.email }}
+                                    </small>
+
+                                    {% if pedido.user.phone %}
+                                        <small>
+                                            {{ pedido.user.phone }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span class="empty-value">
+                                    Utilizador não encontrado
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if pedido.items %}
+
+                                <div class="pedido-produtos-lista">
+
+                                    {% for item in pedido.items %}
+
+                                        <div class="pedido-produto-item">
+
+                                            <a href="{{ url_for(
+                                                'main.produto_detalhe',
+                                                slug=item.produto.slug
+                                            ) }}"
+                                               class="pedido-produto-imagem">
+
+                                                {% if item.produto.imagem %}
+                                                    <img
+                                                        src="{{ url_for(
+                                                            'static',
+                                                            filename=item.produto.imagem
+                                                        ) }}"
+                                                        alt="{{ item.produto.nome }}"
+                                                        loading="lazy">
+                                                {% else %}
+                                                    <div class="produto-sem-imagem">
+                                                        <i class="fa-solid fa-image"></i>
+                                                    </div>
+                                                {% endif %}
+
+                                            </a>
+
+                                            <div class="pedido-produto-dados">
+
+                                                <a href="{{ url_for(
+                                                    'main.produto_detalhe',
+                                                    slug=item.produto.slug
+                                                ) }}"
+                                                   class="pedido-produto-nome">
+                                                    {{ item.produto.nome }}
+                                                </a>
+
+                                                <span>
+                                                    Quantidade:
+                                                    <strong>{{ item.quantidade }}</strong>
+                                                </span>
+
+                                                <span>
+                                                    Preço:
+                                                    <strong>
+                                                        {{ "%.2f"|format(item.produto.preco) }} MT
+                                                    </strong>
+                                                </span>
+
+                                                <span>
+                                                    Subtotal:
+                                                    <strong>
+                                                        {{ "%.2f"|format(
+                                                            item.quantidade * item.produto.preco
+                                                        ) }} MT
+                                                    </strong>
+                                                </span>
+
+                                            </div>
+
+                                        </div>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% else %}
+
+                                <span class="empty-value">
+                                    Carrinho vazio
+                                </span>
+
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="quantidade-total-badge">
+                                {{ total_quantidade }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <strong class="pedido-total">
+                                {{ "%.2f"|format(total.valor) }} MT
+                            </strong>
+                        </td>
+
+                        <td>
+                            {% if pedido.created_at %}
+                                {{ pedido.created_at.strftime("%d/%m/%Y %H:%M") }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+                        <td colspan="6">
+
+                            <div class="empty-table-state">
+
+                                <i class="fa-solid fa-cart-arrow-down"></i>
+
+                                <h3>Nenhum carrinho encontrado</h3>
+
+                                <p>
+                                    Os carrinhos dos clientes aparecerão aqui.
+                                </p>
+
+                            </div>
+
+                        </td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% if pagination.pages > 1 %}
+
+        <div class="pagination">
+
+            {% if pagination.has_prev %}
+                <a href="{{ url_for(
+                    'admin.pedidos',
+                    page=pagination.prev_num
+                ) }}">
+                    Anterior
+                </a>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(
+                left_edge=1,
+                right_edge=1,
+                left_current=2,
+                right_current=2
+            ) %}
+
+                {% if page_num %}
+
+                    {% if page_num == pagination.page %}
+                        <span class="active-page">
+                            {{ page_num }}
+                        </span>
+                    {% else %}
+                        <a href="{{ url_for(
+                            'admin.pedidos',
+                            page=page_num
+                        ) }}">
+                            {{ page_num }}
+                        </a>
+                    {% endif %}
+
+                {% else %}
+                    <span>…</span>
+                {% endif %}
+
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <a href="{{ url_for(
+                    'admin.pedidos',
+                    page=pagination.next_num
+                ) }}">
+                    Seguinte
+                </a>
+            {% endif %}
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

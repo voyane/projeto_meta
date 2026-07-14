@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Promoções{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header">
+
+        <h1>Promoções</h1>
+
+        <a href="{{ url_for('admin.nova_promocao') }}" class="admin-btn">
+            + Nova Promoção
+        </a>
+
+    </div>
+
+    {% if promocoes %}
+
+    <table class="admin-table">
+
+        <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Produto</th>
+                <th>Desconto</th>
+                <th>Estado</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for promocao in promocoes %}
+
+            <tr>
+
+                <td>{{ promocao.id }}</td>
+
+                <td>{{ promocao.nome }}</td>
+
+                <td>{{ promocao.produto.nome }}</td>
+
+                <td>{{ promocao.desconto }}%</td>
+
+                <td>
+
+                    {% if promocao.ativo %}
+                        <span style="color:green;">Ativa</span>
+                    {% else %}
+                        <span style="color:red;">Inativa</span>
+                    {% endif %}
+
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+        <div class="admin-empty">
+
+            <h2>Nenhuma promoção encontrada.</h2>
+
+            <p>Clique em <strong>Nova Promoção</strong> para criar a primeira.</p>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}

@@ -267,3 +267,110 @@ body::before{
         font-size: 0.95rem;
     }
 }
+
+/* ================= PROMOÇÃO NO DETALHE ================= */
+
+.produto-imagem-box{
+    position:relative;
+    overflow:hidden;
+    width:100%;
+    max-width:500px;
+    margin:auto;
+}
+
+.produto-promocao-ribbon{
+    position:absolute;
+    top:24px;
+    left:-48px;
+    width:180px;
+    padding:9px 0;
+    background:#facc15;
+    color:#111827;
+    text-align:center;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.6px;
+    transform:rotate(-45deg);
+    z-index:5;
+    box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+
+.produto-desconto-badge{
+    position:absolute;
+    top:16px;
+    right:16px;
+    padding:9px 13px;
+    border-radius:10px;
+    background:#dc2626;
+    color:#fff;
+    font-size:14px;
+    font-weight:800;
+    z-index:5;
+}
+
+.produto-promocao-detalhe{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    margin:15px 0;
+}
+
+.produto-precos{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:14px;
+}
+
+.produto-preco-antigo{
+    color:#64748b;
+    font-size:17px;
+    text-decoration:line-through;
+}
+
+.produto-preco-promocional{
+    color:#ef4444;
+    font-size:28px;
+    font-weight:800;
+}
+
+.produto-economia{
+    display:inline-flex;
+    padding:7px 14px;
+    border-radius:999px;
+    background:#dcfce7;
+    color:#166534;
+    font-size:13px;
+    font-weight:700;
+}
+
+/* ================= STOCK ================= */
+
+.produto-stock{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    margin:10px 0;
+    padding:7px 13px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+}
+
+.produto-stock-disponivel{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.produto-stock-indisponivel{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.cart-btn:disabled{
+    background:#94a3b8;
+    cursor:not-allowed;
+}

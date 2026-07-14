@@ -3,7 +3,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
-
+#==================USERS========================
 class User(db.Model, UserMixin):
     __tablename__ = "users"
     id = db.Column(db.Integer, primary_key=True)
@@ -77,6 +77,40 @@ class Produto(db.Model):
     def total_avaliacoes(self):
         return len(self.ratings)
     
+    def promocao_ativa(self):
+        agora = datetime.utcnow()
+
+        for promocao in self.promocoes:
+            if not promocao.ativo:
+                continue
+
+            if promocao.data_inicio and promocao.data_inicio > agora:
+                continue
+
+            if promocao.data_fim and promocao.data_fim < agora:
+                continue
+
+            return promocao
+
+        return None
+
+    def preco_promocional(self):
+        promocao = self.promocao_ativa()
+
+        if not promocao:
+            return self.preco
+
+        desconto = promocao.desconto / 100
+        return round(self.preco * (1 - desconto), 2)
+
+    def valor_poupado(self):
+        promocao = self.promocao_ativa()
+
+        if not promocao:
+            return 0
+
+        return round(self.preco - self.preco_promocional(), 2)
+    
 #================Ratting========================
 class Rating(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -111,17 +145,75 @@ class Cart(db.Model):
 class CartItem(db.Model):
     __tablename__ = "cart_items"
 
-    id = db.Column(db.Integer, primary_key=True)
-    cart_id = db.Column(db.Integer, db.ForeignKey("carts.id"), nullable=False)
+    id = db.Column(db.Integer, primary_key=True )
 
+    cart_id = db.Column(db.Integer, db.ForeignKey("carts.id", ondelete="CASCADE"),
+        nullable=False, index=True
+    )
+
+    produto_id = db.Column(
+        db.Integer,
+        db.ForeignKey("produtos.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+
+    quantidade = db.Column(db.Integer, nullable=False, default=1)
+
+    produto = db.relationship(
+        "Produto",
+        backref=db.backref("cart_items", lazy=True)
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "cart_id",
+            "produto_id",
+            name="unique_cart_item"
+        ),
+        db.CheckConstraint(
+            "quantidade > 0",
+            name="check_cart_item_quantidade_positiva"
+        )
+    )
+
+#========================CATEGORIAS========================
+class Categoria(db.Model):
+    __tablename__ = "categorias"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+    descricao = db.Column(db.Text, nullable=True)
+    ativo = db.Column(db.Boolean, default=True)
+
+#========================PROMOÇÕES========================
+class Promocao(db.Model):
+    __tablename__ = "promocoes"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(150), nullable=False)
+    slug = db.Column(db.String(150), unique=True, nullable=False)
+    descricao = db.Column(db.Text)
+
+    # Produto que receberá a promoção
     produto_id = db.Column(db.Integer, db.ForeignKey("produtos.id"), nullable=False)
 
-    quantidade = db.Column(db.Integer, default=1)
+    produto = db.relationship("Produto", backref=db.backref("promocoes", lazy=True))
 
-    # relacionamento com Produto
-    produto = db.relationship("Produto")
+    # Percentagem de desconto
+    desconto = db.Column(db.Integer, nullable=False)
 
-    # 🚨 MUITO IMPORTANTE (evita duplicados)
-    __table_args__ = (
-        db.UniqueConstraint("cart_id", "produto_id", name="unique_cart_item"),
-    )
+    # Texto da faixa (PROMO, BLACK FRIDAY, HALFWAY DAY...)
+    selo = db.Column(db.String(50), default="PROMO")
+
+    # Datas da promoção
+    data_inicio = db.Column(db.DateTime, default=datetime.utcnow)
+
+    data_fim = db.Column(db.DateTime)
+
+    ativo = db.Column(db.Boolean, default=True)
+
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+
+

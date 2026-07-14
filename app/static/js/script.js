@@ -1,201 +1,353 @@
+document.addEventListener("DOMContentLoaded", () => {
+    inicializarFavoritos();
+    inicializarRatings();
+    inicializarBotoesCarrinho();
+    inicializarCartDrawer();
+    updateCartCount();
+});
 
-//-------------CHAT--------------------------
-function toggleChat(){
+/* =========================================================
+   CHAT
+========================================================= */
+
+function toggleChat() {
     const chatBox = document.getElementById("chatBox");
-    chatBox.style.display = chatBox.style.display === "flex" ? "none" : "flex";
+
+    if (!chatBox) return;
+
+    chatBox.style.display =
+        chatBox.style.display === "flex" ? "none" : "flex";
 }
-function sendMessage(){
+
+function sendMessage() {
     const input = document.getElementById("chatInput");
     const chatBody = document.getElementById("chatBody");
 
-    if(input.value.trim() === "") return;
+    if (!input || !chatBody) return;
 
-    //====Mensagem do usuário===================
+    const mensagem = input.value.trim();
+
+    if (!mensagem) return;
+
     const userMsg = document.createElement("div");
     userMsg.classList.add("user-message");
-    userMsg.textContent = input.value;
+    userMsg.textContent = mensagem;
+
     chatBody.appendChild(userMsg);
     chatBody.scrollTop = chatBody.scrollHeight;
 
-    //=====Enviar para WhatsApp==================
-    const numero = "258845421616"; // seu número
-    const texto = encodeURIComponent(input.value);
-    const url = `https://wa.me/${numero}?text=${texto}`;
+    const numero = "258845421616";
+    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
     window.open(url, "_blank");
 
     input.value = "";
 }
 
-//=====================FAVORITOS=============================
-let favoritos = JSON.parse(localStorage.getItem("favoritos")) || [];
+/* =========================================================
+   FAVORITOS
+========================================================= */
 
-document.querySelectorAll(".favorito").forEach(btn => {
-    const id = btn.dataset.id;
-    const icon = btn.querySelector("i");
+function inicializarFavoritos() {
+    let favoritos = JSON.parse(
+        localStorage.getItem("favoritos")
+    ) || [];
 
-    if(favoritos.includes(id)){
-        icon.classList.add("active");
-    }
+    document.querySelectorAll(".favorito").forEach((btn) => {
+        const id = btn.dataset.id;
+        const icon = btn.querySelector("i");
 
-    btn.addEventListener("click", () => {
-        icon.classList.toggle("active");
+        if (!id || !icon) return;
 
-        if(favoritos.includes(id)){
-            favoritos = favoritos.filter(f => f !== id);
-        } else {
-            favoritos.push(id);
+        if (favoritos.includes(id)) {
+            icon.classList.add("active");
+            icon.classList.remove("fa-regular");
+            icon.classList.add("fa-solid");
         }
 
-        localStorage.setItem("favoritos", JSON.stringify(favoritos));
+        btn.addEventListener("click", () => {
+            if (favoritos.includes(id)) {
+                favoritos = favoritos.filter(
+                    favoritoId => favoritoId !== id
+                );
+
+                icon.classList.remove("active");
+                icon.classList.remove("fa-solid");
+                icon.classList.add("fa-regular");
+            } else {
+                favoritos.push(id);
+
+                icon.classList.add("active");
+                icon.classList.remove("fa-regular");
+                icon.classList.add("fa-solid");
+            }
+
+            localStorage.setItem(
+                "favoritos",
+                JSON.stringify(favoritos)
+            );
+        });
     });
-});
+}
 
-/* =================RATING======================== */
-document.querySelectorAll(".rating").forEach(ratingDiv => {
-    const produtoId = ratingDiv.dataset.produto;
-    const stars = ratingDiv.querySelectorAll("i");
-    const mediaSpan = ratingDiv.querySelector(".media-rating"); // só do produto atual
+/* =========================================================
+   RATING
+========================================================= */
 
-    stars.forEach(star => {
-        star.addEventListener("click", async () => {
-            const valor = Number(star.dataset.star);
-            // ===== UI instantânea =====
-            stars.forEach(s => {
-                s.classList.toggle("active", Number(s.dataset.star) <= valor);
-            });
-            // ===== envia para Flask =====
-            try {
-                const response = await fetch("/api/rating", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ produto_id: produtoId, valor: valor })
+function inicializarRatings() {
+    document.querySelectorAll(".rating").forEach((ratingDiv) => {
+        const produtoId = ratingDiv.dataset.produto;
+        const stars = ratingDiv.querySelectorAll("[data-star]");
+        const mediaSpan = ratingDiv.querySelector(".media-rating");
+
+        if (!produtoId || !stars.length) return;
+
+        stars.forEach((star) => {
+            star.addEventListener("click", async () => {
+                const valor = Number(star.dataset.star);
+
+                stars.forEach((item) => {
+                    item.classList.toggle(
+                        "active",
+                        Number(item.dataset.star) <= valor
+                    );
                 });
 
-                const data = await response.json();
+                try {
+                    const response = await fetch("/api/rating", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            produto_id: produtoId,
+                            valor: valor
+                        })
+                    });
 
-                // Se não estiver logado, redireciona para login
-                if (data.login_required) {
-                    const currentUrl = window.location.pathname + window.location.search;
-                    window.location.href = `/login?next=${encodeURIComponent(currentUrl)}`;
-                    return;
+                    const data = await response.json();
+
+                    if (data.login_required) {
+                        const currentUrl =
+                            window.location.pathname +
+                            window.location.search;
+
+                        window.location.href =
+                            `/login?next=${encodeURIComponent(currentUrl)}`;
+
+                        return;
+                    }
+
+                    if (data.success && mediaSpan) {
+                        mediaSpan.textContent = data.media;
+                    }
+
+                    if (!data.success && data.message) {
+                        showToast(data.message, "error");
+                    }
+                } catch (error) {
+                    console.error("Erro ao enviar avaliação:", error);
+                    showToast(
+                        "Não foi possível enviar a avaliação.",
+                        "error"
+                    );
                 }
-                // Atualiza média no produto correto
-                if (data.success && mediaSpan) {
-                    mediaSpan.innerText = "⭐ " + data.media;
-                }
-            } catch (err) {
-                console.error("Erro ao enviar rating:", err);
-            }
+            });
         });
     });
-});
-/* ===============TOAST============================ */
-function showToast(msg){
-    const container = document.getElementById("toast");
-    if(!container) return;
-
-    const toast = document.createElement("div");
-    toast.className = "toast-msg";
-    toast.innerHTML = `
-        <i class="fa-solid fa-circle-check"></i>
-        <span>${msg}</span>
-    `;
-    container.appendChild(toast);
-
-    setTimeout(()=>{
-        toast.classList.add("toast-hide");
-        setTimeout(()=>toast.remove(),400);
-    },3000);
 }
 
-//==================CARRINHO (FLASK API)========================
+/* =========================================================
+   TOAST
+========================================================= */
 
-//==================ATUALIZAR CONTADOR==========================
-async function updateCartCount(){
-    try{
-        const res = await fetch("/api/cart/count");
-        const data = await res.json();
+function showToast(message, type = "success") {
+    const container = document.getElementById("toast");
+
+    if (!container) return;
+
+    const toast = document.createElement("div");
+
+    toast.className = `toast-msg toast-${type}`;
+
+    const icon =
+        type === "error"
+            ? "fa-circle-xmark"
+            : "fa-circle-check";
+
+    toast.innerHTML = `
+        <i class="fa-solid ${icon}"></i>
+        <span></span>
+    `;
+
+    toast.querySelector("span").textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add("toast-hide");
+
+        setTimeout(() => {
+            toast.remove();
+        }, 400);
+    }, 3000);
+}
+
+/* =========================================================
+   CONTADOR DO CARRINHO
+========================================================= */
+
+async function updateCartCount() {
+    try {
+        const response = await fetch("/api/cart/count");
+        const data = await response.json();
+
         const counter = document.getElementById("cartCount");
-        if(counter){
-            counter.textContent = data.count;
+
+        if (counter) {
+            counter.textContent = data.count ?? 0;
         }
-    }catch(err){
-        console.log("Contador Indisponível!");
+    } catch (error) {
+        console.warn("Contador do carrinho indisponível:", error);
     }
 }
 
-//==================ADICIONAR PRODUTO(CARRINHO)=======================
-async function adicionarCarrinho(slug){
-    try{
-        const res = await fetch("/api/cart/add",{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({ slug: slug })
+/* =========================================================
+   ADICIONAR AO CARRINHO
+========================================================= */
+
+async function adicionarCarrinho(slug, button = null) {
+    if (!slug) return;
+
+    try {
+        if (button) {
+            button.disabled = true;
+        }
+
+        const response = await fetch("/api/cart/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                slug: slug
+            })
         });
 
-        const data = await res.json();
+        const data = await response.json();
 
-        if(data.login_required){
-            // redireciona para login e mantém página atual
-            const currentUrl = window.location.pathname + window.location.search;
-            window.location.href = `/login?next=${encodeURIComponent(currentUrl)}`;
+        if (data.login_required) {
+            const currentUrl =
+                window.location.pathname +
+                window.location.search;
+
+            window.location.href =
+                `/login?next=${encodeURIComponent(currentUrl)}`;
+
             return;
         }
 
-        if(data.success){
-            updateCartCount();
+        if (data.success) {
+            await updateCartCount();
             animarCarrinho();
-            showToast("Produto adicionado ao carrinho 🛒");
-        }
 
-    }catch(error){
-        console.error(error);
+            showToast(
+                data.message || "Produto adicionado ao carrinho."
+            );
+        } else {
+            showToast(
+                data.message || "Não foi possível adicionar o produto.",
+                "error"
+            );
+        }
+    } catch (error) {
+        console.error("Erro ao adicionar ao carrinho:", error);
+
+        showToast(
+            "Ocorreu um erro ao adicionar o produto.",
+            "error"
+        );
+    } finally {
+        if (button) {
+            button.disabled = false;
+        }
     }
 }
 
-//=================ANIMAÇÃO DO BOTÃO==================================
-function animarCarrinho(){
+function inicializarBotoesCarrinho() {
+    document
+        .querySelectorAll(".cart-btn[data-id]")
+        .forEach((button) => {
+            button.addEventListener("click", () => {
+                const slug = button.dataset.id;
+
+                adicionarCarrinho(slug, button);
+            });
+        });
+}
+
+/* =========================================================
+   ANIMAÇÃO DO CARRINHO
+========================================================= */
+
+function animarCarrinho() {
     const cart = document.getElementById("cartCount");
 
-    cart.style.transform = "scale(1.4)";
-    setTimeout(()=>{
-        cart.style.transform = "scale(1)";
-    },200);
+    if (!cart) return;
+
+    cart.classList.add("cart-bounce");
+
+    setTimeout(() => {
+        cart.classList.remove("cart-bounce");
+    }, 500);
 }
 
-//==============EVENTO BOTÃO ADICIONAR=====================
-document.querySelectorAll(".cart-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        const slug = btn.dataset.id;
-        adicionarCarrinho(slug);
+/* =========================================================
+   CART DRAWER
+========================================================= */
+
+function inicializarCartDrawer() {
+    const drawer = document.getElementById("cartDrawer");
+    const openCart = document.getElementById("openCart");
+    const closeCart = document.getElementById("closeCart");
+
+    if (!drawer) return;
+
+    openCart?.addEventListener("click", (event) => {
+        event.preventDefault();
+        drawer.classList.add("active");
     });
-});
 
-//=============CART DRAWER (visual)========================
-const drawer = document.getElementById("cartDrawer");
-const openCart = document.getElementById("openCart");
-const closeCart = document.getElementById("closeCart");
+    closeCart?.addEventListener("click", () => {
+        drawer.classList.remove("active");
+    });
 
-openCart?.addEventListener("click", () =>
-    drawer.classList.add("active")
-);
-closeCart?.addEventListener("click", () =>
-    drawer.classList.remove("active")
-);
+    document.addEventListener("click", (event) => {
+        if (
+            drawer.classList.contains("active") &&
+            !drawer.contains(event.target) &&
+            !openCart?.contains(event.target)
+        ) {
+            drawer.classList.remove("active");
+        }
+    });
+}
 
-//=====================INIT=================================
-document.addEventListener("DOMContentLoaded", updateCartCount);
+/* =========================================================
+   COMPRAR PELO WHATSAPP
+========================================================= */
 
-//==================COMPRAR WHATSAPP===========================
-
-function comprarWhatsapp(nomeProduto){
+function comprarWhatsapp(nomeProduto, precoProduto = null) {
     const numero = "258845421616";
-    const mensagem = `Olá, quero comprar o produto: ${nomeProduto}`;
-    const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
+    let mensagem = `Olá, quero comprar o produto: ${nomeProduto}`;
+
+    if (precoProduto) {
+        mensagem += `\nPreço: ${precoProduto} MT`;
+    }
+
+    const url =
+        `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+
     window.open(url, "_blank");
 }
-
-//================= INIT =============================
-document.addEventListener("DOMContentLoaded", updateCartCount);

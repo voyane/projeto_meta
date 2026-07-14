@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}
-Hipercalóricos
+    {{ categoria|capitalize }}
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/categoria.css') }}">
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/categoria.css') }}">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
 
-    <!-- BREADCRUMB -->
+    <!-- ================= BREADCRUMB ================= -->
     <div class="breadcrumb-container">
         <nav class="breadcrumb">
 
@@ -41,99 +42,293 @@ Hipercalóricos
         </nav>
     </div>
 
-    <!--Artigos/Produtos-->
+    <!-- ================= PRODUTOS ================= -->
     <section class="artigo-section" id="product-section">
+
         <div class="artigo-title">
-            <h2>NOSSOS ARTIGOS</h2>
+            <h2>
+                {{ categoria|capitalize }}
+            </h2>
         </div>
 
         <div class="artigo-container">
-            {% for produto in produtos %}
-            <div class="artigo-card">
-                <!-- FAVORITO -->
-                <div class="favorito" data-id="{{ produto.slug }}">
-                    <i class="fa-solid fa-heart"></i>
-                </div>
-                <!-- IMAGEM: link para detalhes -->
-                <a href="{{ url_for('main.produto_detalhe', slug=produto.slug) }}">
-                    <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}">
-                </a>
-               
-                <div class="artigo-info">
-                    <p class="price-artigo">
-                        {{ "%.2f"|format(produto.preco) }} MT
-                    </p>
-                    <h3>{{ produto.nome }}</h3>
 
-                    <!-- RATING -->
-                    <div class="rating" data-produto="{{ produto.id }}">
-                        {% set rating = produto.media_rating|default(0)|float %}
-                        {% for i in range(1, 6) %}
-                            <i class="fa-solid fa-star {% if i <= rating|round(0, 'floor') %}active{% endif %}" data-star="{{ i }}"></i>
-                        {% endfor %}
-                        <span class="media-rating">
-                            {% if rating > 0 %}
-                                ⭐ {{ rating|round(1) }}
+            {% if produtos %}
+
+                {% for produto in produtos %}
+
+                    {% set promocao = produto.promocao_ativa() %}
+
+                    <article class="artigo-card {% if promocao %}produto-em-promocao{% endif %}">
+
+                        <!-- ================= PROMOÇÃO ================= -->
+                        {% if promocao %}
+
+                            <div class="promo-ribbon">
+                                {{ promocao.selo or "PROMO" }}
+                            </div>
+
+                            <div class="discount-badge">
+                                -{{ promocao.desconto }}%
+                            </div>
+
+                        {% endif %}
+
+                        <!-- ================= FAVORITO ================= -->
+                        <button
+                            type="button"
+                            class="favorito"
+                            data-id="{{ produto.slug }}"
+                            aria-label="Adicionar {{ produto.nome }} aos favoritos">
+
+                            <i class="fa-regular fa-heart"></i>
+                        </button>
+
+                        <!-- ================= IMAGEM ================= -->
+                        <a
+                            href="{{ url_for('main.produto_detalhe', slug=produto.slug) }}"
+                            class="artigo-image-link">
+
+                            <img
+                                src="{{ url_for('static', filename=produto.imagem) }}"
+                                alt="{{ produto.nome }}"
+                                class="produto-card-img"
+                                loading="lazy">
+
+                        </a>
+
+                        <!-- ================= INFORMAÇÕES ================= -->
+                        <div class="artigo-info">
+
+                            <h3>
+                                <a href="{{ url_for('main.produto_detalhe', slug=produto.slug) }}">
+                                    {{ produto.nome }}
+                                </a>
+                            </h3>
+
+                            {% if promocao %}
+
+                                <div class="price-box">
+
+                                    <span class="old-price">
+                                        {{ "%.2f"|format(produto.preco) }} MT
+                                    </span>
+
+                                    <span class="promo-price">
+                                        {{ "%.2f"|format(produto.preco_promocional()) }} MT
+                                    </span>
+
+                                </div>
+
+                                <div class="save-badge">
+                                    Poupe {{ "%.2f"|format(produto.valor_poupado()) }} MT
+                                </div>
+
+                            {% else %}
+
+                                <p class="price-artigo">
+                                    {{ "%.2f"|format(produto.preco) }} MT
+                                </p>
+
                             {% endif %}
-                        </span>
-                    </div>
+
+                            <!-- ================= RATING ================= -->
+                            <div
+                                class="rating"
+                                data-produto="{{ produto.id }}">
+
+                                {% set rating = produto.media_rating|default(0)|float %}
+
+                                {% for i in range(1, 6) %}
+                                    <i
+                                        class="fa-solid fa-star {% if i <= rating|round(0, 'floor') %}active{% endif %}"
+                                        data-star="{{ i }}">
+                                    </i>
+                                {% endfor %}
+
+                                {% if rating > 0 %}
+                                    <span class="media-rating">
+                                        {{ rating|round(1) }}
+                                    </span>
+                                {% endif %}
+
+                            </div>
+
+                            <!-- ================= STOCK ================= -->
+                            {% if produto.stock is defined %}
+
+                            {% if produto.stock > 0 %}
+
+                                <span class="stock-badge stock-available">
+
+                                    <i class="fa-solid fa-check-circle"></i>
+
+                                    Em stock
+
+                                    ({{ produto.stock }}
+
+                                    {% if produto.stock == 1 %}
+                                        unidade
+                                    {% else %}
+                                        unidades
+                                    {% endif %})
+
+                                </span>
+
+                            {% else %}
+
+                                <span class="stock-badge stock-unavailable">
+
+                                    <i class="fa-solid fa-circle-xmark"></i>
+
+                                    Sem stock
+
+                                </span>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                        </div>
+
+                        <!-- ================= CARRINHO ================= -->
+                        <button
+                            type="button"
+                            class="cart-btn"
+                            data-id="{{ produto.slug }}"
+                            {% if produto.stock is defined and produto.stock <= 0 %}disabled{% endif %}>
+
+                            {% if produto.stock is defined and produto.stock <= 0 %}
+                                Indisponível
+                            {% else %}
+                                Adicionar
+                                <i class="fa-solid fa-cart-shopping"></i>
+                            {% endif %}
+
+                        </button>
+
+                    </article>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="empty-products">
+
+                    <i class="fa-solid fa-box-open"></i>
+
+                    <h3>Nenhum produto encontrado</h3>
+
+                    <p>
+                        Ainda não existem produtos nesta categoria.
+                    </p>
+
+                    <a href="{{ url_for('main.index') }}#product-section">
+                        Voltar aos produtos
+                    </a>
+
                 </div>
 
-                <!-- CARRINHO -->
-                <button class="cart-btn" data-id="{{ produto.slug }}">
-                    Adicionar
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </button>
-            </div>
-            {% endfor %}
+            {% endif %}
+
         </div>
+
     </section>
 
-    <!--Chat-->
+    <!-- ================= CHAT ================= -->
     <section class="chat-section">
-        <div class="chat-button" onclick="toggleChat()">💬</div>
+
+        <button
+            type="button"
+            class="chat-button"
+            onclick="toggleChat()"
+            aria-label="Abrir chat">
+            💬
+        </button>
 
         <div class="chat-box" id="chatBox">
+
             <div class="chat-header">
-                Metamorphose Fit
-                <span onclick="toggleChat()">✖</span>
+
+                <span>Metamorphose Fit</span>
+
+                <button
+                    type="button"
+                    onclick="toggleChat()"
+                    aria-label="Fechar chat">
+                    ✖
+                </button>
+
             </div>
 
             <div class="chat-body" id="chatBody">
+
                 <div class="bot-message">
                     Olá 👋 Como podemos ajudar você hoje?
                 </div>
+
             </div>
 
             <div class="chat-footer">
-                <input type="text" id="chatInput" placeholder="Digite sua mensagem...">
-                <button onclick="sendMessage()">Enviar</button>
+
+                <input
+                    type="text"
+                    id="chatInput"
+                    placeholder="Digite sua mensagem...">
+
+                <button
+                    type="button"
+                    onclick="sendMessage()">
+                    Enviar
+                </button>
+
             </div>
+
         </div>
+
     </section>
 
-    <!--Cart Drawer-->
-    <div class="cart-drawer" id="cartDrawer">
+    <!-- ================= CART DRAWER ================= -->
+    <aside class="cart-drawer" id="cartDrawer">
 
         <div class="cart-header">
+
             <h3>Seu Carrinho</h3>
-            <i class="fa-solid fa-xmark" id="closeCart"></i>
+
+            <button
+                type="button"
+                id="closeCart"
+                aria-label="Fechar carrinho">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
         </div>
 
         <div class="cart-items" id="cartItems"></div>
 
         <div class="cart-footer">
-            <h4>Total: <span id="cartTotal">0 MT</span></h4>
-            <button id="checkoutBtn">Finalizar Pedido</button>
+
+            <h4>
+                Total:
+                <span id="cartTotal">0 MT</span>
+            </h4>
+
+            <button
+                type="button"
+                id="checkoutBtn">
+                Finalizar Pedido
+            </button>
+
         </div>
 
-    </div>
+    </aside>
 
     <div id="toast"></div>
 
 {% endblock %}
 
-
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

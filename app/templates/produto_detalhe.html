@@ -1,82 +1,190 @@
 {% extends "base.html" %}
 
 {% block title %}
-{{ produto.nome }}
+    {{ produto.nome }}
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/produto.css') }}">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/produto.css') }}">
+
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 {% endblock %}
 
 {% block content %}
-    <!-- BREADCRUMB -->
-    <div class="breadcrumb-container">
-        <nav class="breadcrumb">
 
-            <a href="{{ url_for('main.index') }}">
-                <i class="fa-solid fa-house"></i>
-                Home
-            </a>
+{% set promocao = produto.promocao_ativa() %}
 
-            <span class="separator">
-                <i class="fa-solid fa-chevron-right"></i>
-            </span>
+<!-- ================= BREADCRUMB ================= -->
+<div class="breadcrumb-container">
+    <nav class="breadcrumb">
 
-            <a href="{{ url_for('main.index') }}#product-section">
-                Produtos
-            </a>
+        <a href="{{ url_for('main.index') }}">
+            <i class="fa-solid fa-house"></i>
+            Home
+        </a>
 
-            <span class="separator">
-                <i class="fa-solid fa-chevron-right"></i>
-            </span>
+        <span class="separator">
+            <i class="fa-solid fa-chevron-right"></i>
+        </span>
 
-            <span class="current-page">
-                {{ produto.nome }}
-            </span>
+        <a href="{{ url_for('main.index') }}#product-section">
+            Produtos
+        </a>
 
-        </nav>
-    </div>
-    <section class="produto-detalhe-container">
+        <span class="separator">
+            <i class="fa-solid fa-chevron-right"></i>
+        </span>
 
-        <!-- Imagem do produto -->
-        <div class="produto-imagem">
-            <img src="{{ url_for('static', filename=produto.imagem) }}" alt="{{ produto.nome }}">
+        <span class="current-page">
+            {{ produto.nome }}
+        </span>
 
-            <!-- Informações abaixo da imagem -->
-            <p class="produto-preco">{{ "%.2f"|format(produto.preco) }} MT</p>
-            <p class="produto-categoria"><strong>Categoria:</strong> {{ produto.categoria }}</p>
+    </nav>
+</div>
 
-            <!-- Rating -->
-            <div class="rating" data-produto="{{ produto.id }}">
-                {% set rating = produto.media_rating|default(0)|float %}
-                {% for i in range(1, 6) %}
-                    <i class="fa-solid fa-star {% if i <= rating|round(0, 'floor') %}active{% endif %}" data-star="{{ i }}"></i>
-                {% endfor %}
-                <span class="media-rating">
-                    {% if rating > 0 %}
-                        ⭐ {{ rating|round(1) }}
-                    {% endif %}
-                </span>
-            </div>
+<!-- ================= DETALHES DO PRODUTO ================= -->
+<section class="produto-detalhe-container">
+
+    <!-- IMAGEM E INFORMAÇÕES PRINCIPAIS -->
+    <div class="produto-imagem">
+
+        <div class="produto-imagem-box">
+
+            {% if promocao %}
+                <div class="produto-promocao-ribbon">
+                    {{ promocao.selo or "PROMO" }}
+                </div>
+
+                <div class="produto-desconto-badge">
+                    -{{ promocao.desconto }}%
+                </div>
+            {% endif %}
+
+            <img
+                src="{{ url_for('static', filename=produto.imagem) }}"
+                alt="{{ produto.nome }}">
+
         </div>
 
-        <!-- Descrição e botão -->
-        <div class="produto-info">
-            <h2>{{ produto.nome }}</h2>
-            <div class="produto-descricao">
-                {{ produto.descricao|safe }}
+        <!-- PREÇO -->
+        {% if promocao %}
+
+            <div class="produto-promocao-detalhe">
+
+                <div class="produto-precos">
+
+                    <span class="produto-preco-antigo">
+                        {{ "%.2f"|format(produto.preco) }} MT
+                    </span>
+
+                    <span class="produto-preco-promocional">
+                        {{ "%.2f"|format(produto.preco_promocional()) }} MT
+                    </span>
+
+                </div>
+
+                <span class="produto-economia">
+                    Poupe {{ "%.2f"|format(produto.valor_poupado()) }} MT
+                </span>
+
             </div>
 
-            <button onclick="comprarWhatsapp('{{ produto.nome }}')" class="cart-btn">
+        {% else %}
+
+            <p class="produto-preco">
+                {{ "%.2f"|format(produto.preco) }} MT
+            </p>
+
+        {% endif %}
+
+        <!-- CATEGORIA -->
+        <p class="produto-categoria">
+            <strong>Categoria:</strong>
+            {{ produto.categoria }}
+        </p>
+
+        <!-- STOCK -->
+        {% if produto.stock > 0 %}
+
+            <span class="produto-stock produto-stock-disponivel">
+                <i class="fa-solid fa-circle-check"></i>
+
+                Em stock:
+                {{ produto.stock }}
+
+                {% if produto.stock == 1 %}
+                    unidade
+                {% else %}
+                    unidades
+                {% endif %}
+            </span>
+
+        {% else %}
+
+            <span class="produto-stock produto-stock-indisponivel">
+                <i class="fa-solid fa-circle-xmark"></i>
+                Sem stock
+            </span>
+
+        {% endif %}
+
+        <!-- RATING -->
+        <div class="rating" data-produto="{{ produto.id }}">
+
+            {% set rating = produto.media_rating|default(0)|float %}
+
+            {% for i in range(1, 6) %}
+                <i
+                    class="fa-solid fa-star {% if i <= rating|round(0, 'floor') %}active{% endif %}"
+                    data-star="{{ i }}">
+                </i>
+            {% endfor %}
+
+            {% if rating > 0 %}
+                <span class="media-rating">
+                    {{ rating|round(1) }}
+                </span>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- DESCRIÇÃO E COMPRA -->
+    <div class="produto-info">
+
+        <h2>{{ produto.nome }}</h2>
+
+        <div class="produto-descricao">
+            {{ produto.descricao|safe }}
+        </div>
+
+        <button
+            type="button"
+            onclick="comprarWhatsapp(
+                '{{ produto.nome|e }}',
+                '{{ "%.2f"|format(produto.preco_promocional() if promocao else produto.preco) }}'
+            )"
+            class="cart-btn"
+            {% if produto.stock <= 0 %}disabled{% endif %}>
+
+            {% if produto.stock > 0 %}
                 Comprar via WhatsApp
                 <i class="fa-brands fa-whatsapp"></i>
-            </button>
-        </div>
+            {% else %}
+                Produto indisponível
+            {% endif %}
 
-    </section>
+        </button>
+
+    </div>
+
+</section>
+
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 {% endblock %}

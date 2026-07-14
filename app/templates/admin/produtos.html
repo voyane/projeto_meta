@@ -55,6 +55,35 @@
             {% endfor %}
         </tbody>
     </table>
+        <div class="pagination">
+
+        {% if pagination.has_prev %}
+            <a href="{{ url_for('admin.produtos', page=pagination.prev_num) }}">
+                Anterior
+            </a>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+                {% if page_num == pagination.page %}
+                    <span class="active-page">{{ page_num }}</span>
+                {% else %}
+                    <a href="{{ url_for('admin.produtos', page=page_num) }}">
+                        {{ page_num }}
+                    </a>
+                {% endif %}
+            {% else %}
+                <span>...</span>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+            <a href="{{ url_for('admin.produtos', page=pagination.next_num) }}">
+                Próxima
+            </a>
+        {% endif %}
+
+    </div>
 
 </section>
 
