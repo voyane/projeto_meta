@@ -188,6 +188,7 @@ Detalhes do Cliente
 
                 <form method="POST"
                       action="{{ url_for('admin.alternar_admin', id=cliente.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                     <button type="submit"
                             class="client-action-button admin-role-button">

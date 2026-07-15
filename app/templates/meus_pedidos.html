@@ -43,6 +43,8 @@ Meus Pedidos
 
                     <th>Total</th>
 
+                    <th>Comprovativo</th>
+
                 </tr>
 
             </thead>
@@ -125,13 +127,39 @@ Meus Pedidos
 
                         </td>
 
+                        <td>
+                            {% if pedido.comprovativo %}
+                                <a href="{{ url_for('static', filename=pedido.comprovativo) }}"
+                                   target="_blank"
+                                   rel="noopener">
+                                    Ver comprovativo
+                                </a>
+                            {% elif pedido.status == "aguardando_comprovativo" %}
+                                <form method="POST"
+                                      action="{{ url_for('main.enviar_comprovativo', id=pedido.id) }}"
+                                      enctype="multipart/form-data"
+                                      class="proof-upload-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="file"
+                                           name="comprovativo"
+                                           accept=".png,.jpg,.jpeg,.webp,.pdf"
+                                           required>
+                                    <button type="submit">
+                                        Enviar
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="empty-value">-</span>
+                            {% endif %}
+                        </td>
+
                     </tr>
 
                 {% else %}
 
                     <tr>
 
-                        <td colspan="7">
+                        <td colspan="8">
 
                             <div class="empty-table-state">
 

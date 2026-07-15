@@ -1,6 +1,6 @@
 @font-face{
     font-family:'boxon';
-    src:url('../bozon/ROHH-Bozon-Regular.otf') format('opentype');
+    src:url('../bozon/ROHH%20%20Bozon%20Regular.otf') format('opentype');
 }
 
 *{
@@ -119,6 +119,25 @@
 .arrow{
     font-size:12px;
     transition:.3s ease;
+}
+
+.nav-alert-badge,
+.menu-alert-badge{
+    min-width:22px;
+    height:22px;
+    padding:0 7px;
+    border-radius:999px;
+    background:#dc2626;
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    font-weight:800;
+}
+
+.menu-alert-badge{
+    margin-left:auto;
 }
 
 .user-dropdown-menu,

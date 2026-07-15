@@ -45,6 +45,7 @@
                     <form method="POST"
                           action="{{ url_for('admin.apagar_produto', id=produto.id) }}"
                           style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button type="submit"
                                 onclick="return confirm('Deseja apagar este produto?')">
                             Apagar

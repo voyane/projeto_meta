@@ -21,6 +21,57 @@ def gerar_slug(nome):
     return slug.strip("-")
 
 
+def parse_datetime_field(value):
+    if not value:
+        return None
+    return datetime.strptime(value, "%Y-%m-%dT%H:%M")
+
+
+def datetime_local_value(value):
+    if not value:
+        return ""
+    return value.strftime("%Y-%m-%dT%H:%M")
+
+
+def atualizar_categoria_from_form(categoria):
+    nome = request.form.get("nome", "").strip()
+
+    if not nome:
+        flash("Informe o nome da categoria.", "danger")
+        return False
+
+    categoria.nome = nome
+    categoria.slug = gerar_slug(nome)
+    categoria.descricao = request.form.get("descricao")
+    categoria.ativo = request.form.get("ativo") == "on"
+    return True
+
+
+def atualizar_promocao_from_form(promocao):
+    nome = request.form.get("nome", "").strip()
+    data_inicio = parse_datetime_field(request.form.get("data_inicio"))
+    data_fim = parse_datetime_field(request.form.get("data_fim"))
+
+    if not nome:
+        flash("Informe o nome da promoção.", "danger")
+        return False
+
+    if data_inicio and data_fim and data_fim <= data_inicio:
+        flash("A data de fim deve ser posterior à data de início.", "danger")
+        return False
+
+    promocao.nome = nome
+    promocao.slug = gerar_slug(nome)
+    promocao.descricao = request.form.get("descricao")
+    promocao.produto_id = int(request.form.get("produto_id"))
+    promocao.desconto = int(request.form.get("desconto"))
+    promocao.selo = request.form.get("selo") or "PROMO"
+    promocao.data_inicio = data_inicio or datetime.utcnow()
+    promocao.data_fim = data_fim
+    promocao.ativo = request.form.get("ativo") == "on"
+    return True
+
+
 def salvar_imagem(imagem_file):
     if not imagem_file or not imagem_file.filename:
         return None
@@ -201,24 +252,14 @@ def nova_categoria():
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
-        nome = request.form.get("nome", "").strip()
-        descricao = request.form.get("descricao")
-        ativo = request.form.get("ativo") == "on"
+        categoria = Categoria()
 
-        if not nome:
-            flash("Informe o nome da categoria.", "danger")
+        if not atualizar_categoria_from_form(categoria):
             return redirect(url_for("admin.nova_categoria"))
 
-        if Categoria.query.filter_by(nome=nome).first():
+        if Categoria.query.filter_by(nome=categoria.nome).first():
             flash("Categoria já existe.", "warning")
             return redirect(url_for("admin.nova_categoria"))
-
-        categoria = Categoria(
-            nome=nome,
-            slug=gerar_slug(nome),
-            descricao=descricao,
-            ativo=ativo
-        )
 
         db.session.add(categoria)
         db.session.commit()
@@ -227,6 +268,58 @@ def nova_categoria():
         return redirect(url_for("admin.categorias"))
 
     return render_template("admin/categoria_form.html", categoria=None)
+
+#============================= EDITAR CATEGORIA =========================
+@admin.route("/categorias/editar/<int:id>", methods=["GET", "POST"])
+@login_required
+def editar_categoria(id):
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
+    categoria = Categoria.query.get_or_404(id)
+
+    if request.method == "POST":
+        if not atualizar_categoria_from_form(categoria):
+            return redirect(url_for("admin.editar_categoria", id=id))
+
+        categoria_existente = Categoria.query.filter(
+            Categoria.id != categoria.id,
+            Categoria.nome == categoria.nome
+        ).first()
+
+        if categoria_existente:
+            flash("Categoria já existe.", "warning")
+            return redirect(url_for("admin.editar_categoria", id=id))
+
+        db.session.commit()
+
+        flash("Categoria atualizada com sucesso.", "success")
+        return redirect(url_for("admin.categorias"))
+
+    return render_template("admin/categoria_form.html", categoria=categoria)
+
+#============================= APAGAR CATEGORIA =========================
+@admin.route("/categorias/apagar/<int:id>", methods=["POST"])
+@login_required
+def apagar_categoria(id):
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
+    categoria = Categoria.query.get_or_404(id)
+
+    produto_com_categoria = Produto.query.filter_by(categoria=categoria.slug).first()
+
+    if produto_com_categoria:
+        flash("Não é possível apagar categoria com produtos associados.", "danger")
+        return redirect(url_for("admin.categorias"))
+
+    db.session.delete(categoria)
+    db.session.commit()
+
+    flash("Categoria apagada com sucesso.", "success")
+    return redirect(url_for("admin.categorias"))
 
 #============================= PROMOÇÕES =========================
 @admin.route("/promocoes")
@@ -254,33 +347,10 @@ def nova_promocao():
     produtos = Produto.query.order_by(Produto.nome.asc()).all()
 
     if request.method == "POST":
-        nome = request.form.get("nome", "").strip()
-        data_inicio_raw = request.form.get("data_inicio")
-        data_fim_raw = request.form.get("data_fim")
-        data_inicio = None
-        data_fim = None
+        promocao = Promocao()
 
-        if data_inicio_raw:
-            data_inicio = datetime.strptime(data_inicio_raw, "%Y-%m-%dT%H:%M")
-
-        if data_fim_raw:
-            data_fim = datetime.strptime(data_fim_raw, "%Y-%m-%dT%H:%M")
-
-        if data_inicio and data_fim and data_fim <= data_inicio:
-            flash("A data de fim deve ser posterior à data de início.", "danger")
+        if not atualizar_promocao_from_form(promocao):
             return redirect(url_for("admin.nova_promocao"))
-
-        promocao = Promocao(
-            nome=nome,
-            slug=gerar_slug(nome),
-            descricao=request.form.get("descricao"),
-            produto_id=int(request.form.get("produto_id")),
-            desconto=int(request.form.get("desconto")),
-            selo=request.form.get("selo") or "PROMO",
-            data_inicio=data_inicio or datetime.utcnow(),
-            data_fim=data_fim,
-            ativo=request.form.get("ativo") == "on"
-        )
 
         db.session.add(promocao)
         db.session.commit()
@@ -288,7 +358,54 @@ def nova_promocao():
         flash("Promoção criada com sucesso.", "success")
         return redirect(url_for("admin.promocoes"))
 
-    return render_template("admin/promocao_form.html", produtos=produtos)
+    return render_template(
+        "admin/promocao_form.html",
+        promocao=None,
+        produtos=produtos,
+        datetime_local_value=datetime_local_value
+    )
+
+#============================= EDITAR PROMOÇÃO =========================
+@admin.route("/promocoes/editar/<int:id>", methods=["GET", "POST"])
+@login_required
+def editar_promocao(id):
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
+    promocao = Promocao.query.get_or_404(id)
+    produtos = Produto.query.order_by(Produto.nome.asc()).all()
+
+    if request.method == "POST":
+        if not atualizar_promocao_from_form(promocao):
+            return redirect(url_for("admin.editar_promocao", id=id))
+
+        db.session.commit()
+
+        flash("Promoção atualizada com sucesso.", "success")
+        return redirect(url_for("admin.promocoes"))
+
+    return render_template(
+        "admin/promocao_form.html",
+        promocao=promocao,
+        produtos=produtos,
+        datetime_local_value=datetime_local_value
+    )
+
+#============================= APAGAR PROMOÇÃO =========================
+@admin.route("/promocoes/apagar/<int:id>", methods=["POST"])
+@login_required
+def apagar_promocao(id):
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
+    promocao = Promocao.query.get_or_404(id)
+    db.session.delete(promocao)
+    db.session.commit()
+
+    flash("Promoção apagada com sucesso.", "success")
+    return redirect(url_for("admin.promocoes"))
 
 
 #========================CLIENTES========================
@@ -393,8 +510,24 @@ def pedidos():
         return redirect(url_for("main.index"))
 
     page = request.args.get("page", 1, type=int)
+    status = request.args.get("status", "").strip()
+    pesquisa = request.args.get("q", "").strip()
+    query = Pedido.query
 
-    pagination = Pedido.query.order_by(Pedido.created_at.desc()).paginate(
+    if status:
+        query = query.filter(Pedido.status == status)
+
+    if pesquisa:
+        termo = f"%{pesquisa}%"
+        query = query.join(User).filter(
+            or_(
+                User.name.ilike(termo),
+                User.email.ilike(termo),
+                User.phone.ilike(termo)
+            )
+        )
+
+    pagination = query.order_by(Pedido.created_at.desc()).paginate(
         page=page,
         per_page=10,
         error_out=False
@@ -403,7 +536,9 @@ def pedidos():
     return render_template(
         "admin/pedidos.html",
         pedidos=pagination.items,
-        pagination=pagination
+        pagination=pagination,
+        status=status,
+        pesquisa=pesquisa
     )
 
 #============================= CONFIRMAR PAGAMENTO =========================
@@ -418,6 +553,10 @@ def confirmar_pagamento(id):
 
     if pedido.status == "pago":
         flash("Este pedido já foi confirmado.", "info")
+        return redirect(url_for("admin.pedidos"))
+
+    if pedido.status in ("cancelado", "entregue"):
+        flash("Este pedido já foi encerrado.", "warning")
         return redirect(url_for("admin.pedidos"))
 
     produtos_sem_stock = []
@@ -449,6 +588,36 @@ def confirmar_pagamento(id):
     db.session.commit()
 
     flash("Pagamento confirmado e stock atualizado.", "success")
+    return redirect(url_for("admin.pedidos"))
+
+#============================= ALTERAR ESTADO DO PEDIDO =========================
+@admin.route("/pedidos/<int:id>/estado", methods=["POST"])
+@login_required
+def alterar_estado_pedido(id):
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
+    pedido = Pedido.query.get_or_404(id)
+    novo_status = request.form.get("status")
+    status_permitidos = {"cancelado", "entregue"}
+
+    if novo_status not in status_permitidos:
+        flash("Estado inválido.", "danger")
+        return redirect(url_for("admin.pedidos"))
+
+    if pedido.status == "pago" and novo_status == "cancelado":
+        flash("Pedido pago não pode ser cancelado por esta ação.", "warning")
+        return redirect(url_for("admin.pedidos"))
+
+    if novo_status == "entregue" and pedido.status != "pago":
+        flash("Apenas pedidos pagos podem ser marcados como entregues.", "warning")
+        return redirect(url_for("admin.pedidos"))
+
+    pedido.status = novo_status
+    db.session.commit()
+
+    flash("Estado do pedido atualizado.", "success")
     return redirect(url_for("admin.pedidos"))
 
 #============================= PERFIL =========================

@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from app.models import User, Produto, Cart, CartItem, Rating, Pedido, PedidoItem
 from app.extensions import db, mail
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 from sqlalchemy import func
 from urllib.parse import quote, urlparse, urljoin
 from flask_mail import Message
@@ -10,11 +11,21 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from twilio.rest import Client
 from app.services.whatsapp_service import enviar_whatsapp
 import random
+import os
+import uuid
 from datetime import datetime, timedelta
 
 
 main = Blueprint("main", __name__)
 cart_bp = Blueprint("cart", __name__)
+ALLOWED_PROOF_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "pdf"}
+
+
+def allowed_proof_file(filename):
+    return (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_PROOF_EXTENSIONS
+    )
 
 #==================Login=========================
 def is_safe_url(target):
@@ -218,7 +229,7 @@ def logout():
 #========================Home==========================
 @main.route("/")
 def index():
-    produtos = Produto.query.all()
+    produtos = Produto.query.filter_by(ativo=True).all()
     return render_template("index.html", produtos=produtos)
 
 #========================Perfil==========================
@@ -230,7 +241,10 @@ def perfil():
 #==================Páginas de Produtos=====================
 @main.route("/categoria/<categoria>")
 def categoria(categoria):
-    produtos = Produto.query.filter_by(categoria=categoria).all()
+    produtos = Produto.query.filter_by(
+        categoria=categoria,
+        ativo=True
+    ).all()
 
     if not produtos:
         flash("Nenhum produto encontrado!", "warning")
@@ -248,7 +262,10 @@ def categoria(categoria):
 @main.route("/produto/<slug>")
 def produto_detalhe(slug):
     #=====Busca o produto pelo slug=====
-    produto = Produto.query.filter_by(slug=slug).first()
+    produto = Produto.query.filter_by(
+        slug=slug,
+        ativo=True
+    ).first()
     if not produto:
         abort(404)  # se não existir, retorna 404
 
@@ -264,7 +281,7 @@ def produto_detalhe(slug):
 #======================API Produtos=============================
 @main.route("/api/produtos")
 def list_produto():
-    produtos = Produto.query.all()
+    produtos = Produto.query.filter_by(ativo=True).all()
     return jsonify([p.to_dict() for p in produtos])
 
 #===================Ratings====================================
@@ -330,7 +347,13 @@ def add_to_cart():
     produto = Produto.query.filter_by(slug=slug).first()
 
     if not produto:
-        return jsonify({"success": False})
+        return jsonify({"success": False, "message": "Produto não encontrado."}), 404
+
+    if not produto.ativo:
+        return jsonify({"success": False, "message": "Produto indisponível."}), 400
+
+    if (produto.stock or 0) <= 0:
+        return jsonify({"success": False, "message": "Produto sem stock."}), 400
 
     cart = get_or_create_cart(current_user)
 
@@ -338,6 +361,12 @@ def add_to_cart():
     item = CartItem.query.filter_by(cart_id=cart.id, produto_id=produto.id).first()
 
     if item:
+        if item.quantidade + 1 > (produto.stock or 0):
+            return jsonify({
+                "success": False,
+                "message": "Quantidade solicitada excede o stock disponível."
+            }), 400
+
         item.quantidade += 1
     else:
         item = CartItem(cart_id=cart.id, produto_id=produto.id, quantidade=1)
@@ -367,6 +396,12 @@ def update_cart():
         return jsonify({"success": False})
 
     if action == "increase":
+        if item.quantidade + 1 > (item.produto.stock or 0):
+            return jsonify({
+                "success": False,
+                "message": "Quantidade solicitada excede o stock disponível."
+            }), 400
+
         item.quantidade += 1
 
     elif action == "decrease":
@@ -443,6 +478,22 @@ def checkout_cart():
             "success": False,
             "message": "O carrinho está vazio."
         }), 400
+
+    for item in cart.items:
+        if not item.produto or not item.produto.ativo:
+            return jsonify({
+                "success": False,
+                "message": f"{item.produto.nome if item.produto else item.produto_id} está indisponível."
+            }), 400
+
+        if item.quantidade > (item.produto.stock or 0):
+            return jsonify({
+                "success": False,
+                "message": (
+                    f"{item.produto.nome} tem apenas "
+                    f"{item.produto.stock or 0} em stock."
+                )
+            }), 400
 
     linhas = [
         "Olá, quero finalizar este pedido:",
@@ -574,3 +625,42 @@ def meus_pedidos():
         "meus_pedidos.html",
         pedidos=pedidos
     )
+
+#==================ENVIAR COMPROVATIVO=========================
+@main.route("/meus-pedidos/<int:id>/comprovativo", methods=["POST"])
+@login_required
+def enviar_comprovativo(id):
+    pedido = Pedido.query.filter_by(
+        id=id,
+        user_id=current_user.id
+    ).first_or_404()
+
+    if pedido.status not in ("aguardando_comprovativo", "comprovativo_enviado"):
+        flash("Este pedido não aceita comprovativo neste estado.", "warning")
+        return redirect(url_for("main.meus_pedidos"))
+
+    comprovativo = request.files.get("comprovativo")
+
+    if not comprovativo or not comprovativo.filename:
+        flash("Selecione o ficheiro do comprovativo.", "danger")
+        return redirect(url_for("main.meus_pedidos"))
+
+    if not allowed_proof_file(comprovativo.filename):
+        flash("Formato inválido. Use PNG, JPG, WEBP ou PDF.", "danger")
+        return redirect(url_for("main.meus_pedidos"))
+
+    filename = secure_filename(comprovativo.filename)
+    extensao = filename.rsplit(".", 1)[1].lower()
+    novo_nome = f"pedido-{pedido.id}-{uuid.uuid4().hex}.{extensao}"
+    pasta = os.path.join("app", "static", "uploads", "comprovativos")
+    os.makedirs(pasta, exist_ok=True)
+
+    comprovativo.save(os.path.join(pasta, novo_nome))
+
+    pedido.comprovativo = f"uploads/comprovativos/{novo_nome}"
+    pedido.comprovativo_enviado_em = datetime.utcnow()
+    pedido.status = "comprovativo_enviado"
+    db.session.commit()
+
+    flash("Comprovativo enviado com sucesso. Aguarde confirmação.", "success")
+    return redirect(url_for("main.meus_pedidos"))

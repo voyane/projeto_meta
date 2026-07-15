@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Nova Promoção{% endblock %}
+{% block title %}{{ "Editar Promoção" if promocao else "Nova Promoção" }}{% endblock %}
 
 {% block content %}
 
 <section class="admin-form-page">
 
     <div class="admin-header-div">
-        <h1>Nova Promoção</h1>
+        <h1>{{ "Editar Promoção" if promocao else "Nova Promoção" }}</h1>
 
         <a href="{{ url_for('admin.promocoes') }}" class="admin-btn">
             Voltar
@@ -15,14 +15,20 @@
     </div>
 
     <form method="POST" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <input type="text" name="nome" placeholder="Nome da promoção" required>
+        <input type="text"
+               name="nome"
+               placeholder="Nome da promoção"
+               value="{{ promocao.nome if promocao else '' }}"
+               required>
 
         <select name="produto_id" required>
             <option value="">Selecionar produto</option>
 
             {% for produto in produtos %}
-                <option value="{{ produto.id }}">
+                <option value="{{ produto.id }}"
+                        {% if promocao and promocao.produto_id == produto.id %}selected{% endif %}>
                     {{ produto.nome }} - {{ "%.2f"|format(produto.preco) }} MT
                 </option>
             {% endfor %}
@@ -33,27 +39,35 @@
                placeholder="Desconto em %"
                min="1"
                max="100"
+               value="{{ promocao.desconto if promocao else '' }}"
                required>
 
         <input type="text"
                name="selo"
-               placeholder="Texto da faixa. Ex: PROMO, BLACK FRIDAY, HALFWAY DAY">
+               placeholder="Texto da faixa. Ex: PROMO, BLACK FRIDAY, HALFWAY DAY"
+               value="{{ promocao.selo if promocao else '' }}">
 
         <textarea name="descricao"
-                  placeholder="Descrição da promoção"></textarea>
+                  placeholder="Descrição da promoção">{{ promocao.descricao if promocao else '' }}</textarea>
 
         <label>
             Início da promoção
-            <input type="datetime-local" name="data_inicio">
+            <input type="datetime-local"
+                   name="data_inicio"
+                   value="{{ datetime_local_value(promocao.data_inicio) if promocao else '' }}">
         </label>
 
         <label>
             Fim da promoção
-            <input type="datetime-local" name="data_fim">
+            <input type="datetime-local"
+                   name="data_fim"
+                   value="{{ datetime_local_value(promocao.data_fim) if promocao else '' }}">
         </label>
 
         <label>
-            <input type="checkbox" name="ativo" checked>
+            <input type="checkbox"
+                   name="ativo"
+                   {% if not promocao or promocao.ativo %}checked{% endif %}>
             Promoção ativa
         </label>
 

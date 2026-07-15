@@ -13,6 +13,43 @@
         </div>
     </div>
 
+    <form method="GET" class="admin-filter-form">
+        <input type="text"
+               name="q"
+               placeholder="Pesquisar cliente, email ou telefone"
+               value="{{ pesquisa }}">
+
+        <select name="status">
+            <option value="">Todos os estados</option>
+            <option value="aguardando_comprovativo" {% if status == "aguardando_comprovativo" %}selected{% endif %}>
+                Aguardando comprovativo
+            </option>
+            <option value="em_contacto" {% if status == "em_contacto" %}selected{% endif %}>
+                Em contacto
+            </option>
+            <option value="comprovativo_enviado" {% if status == "comprovativo_enviado" %}selected{% endif %}>
+                Comprovativo enviado
+            </option>
+            <option value="pago" {% if status == "pago" %}selected{% endif %}>
+                Pago
+            </option>
+            <option value="entregue" {% if status == "entregue" %}selected{% endif %}>
+                Entregue
+            </option>
+            <option value="cancelado" {% if status == "cancelado" %}selected{% endif %}>
+                Cancelado
+            </option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+
+        {% if pesquisa or status %}
+            <a href="{{ url_for('admin.pedidos') }}" class="admin-filter-clear">
+                Limpar
+            </a>
+        {% endif %}
+    </form>
+
     <div class="admin-table-wrapper">
 
         <table class="admin-table cart-admin-table">
@@ -24,6 +61,7 @@
                     <th>Produtos</th>
                     <th>Pagamento</th>
                     <th>Estado</th>
+                    <th>Comprovativo</th>
                     <th>Quantidade total</th>
                     <th>Total</th>
                     <th>Criado em</th>
@@ -167,6 +205,18 @@
                         </td>
 
                         <td>
+                            {% if pedido.comprovativo %}
+                                <a href="{{ url_for('static', filename=pedido.comprovativo) }}"
+                                   target="_blank"
+                                   rel="noopener">
+                                    Ver ficheiro
+                                </a>
+                            {% else %}
+                                <span class="empty-value">Não enviado</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
                             <span class="quantidade-total-badge">
                                 {{ total_quantidade }}
                             </span>
@@ -193,15 +243,45 @@
                                           'admin.confirmar_pagamento',
                                           id=pedido.id
                                       ) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit"
                                             class="confirm-payment-btn"
                                             onclick="return confirm('Confirmar pagamento e baixar stock deste pedido?')">
                                         Confirmar pagamento
                                     </button>
                                 </form>
-                            {% else %}
+                            {% endif %}
+
+                            {% if pedido.status not in ["pago", "entregue", "cancelado"] %}
+                                <form method="POST"
+                                      action="{{ url_for('admin.alterar_estado_pedido', id=pedido.id) }}"
+                                      class="inline-action-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="status" value="cancelado">
+                                    <button type="submit"
+                                            class="danger-action-btn"
+                                            onclick="return confirm('Cancelar este pedido?')">
+                                        Cancelar
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            {% if pedido.status == "pago" %}
+                                <form method="POST"
+                                      action="{{ url_for('admin.alterar_estado_pedido', id=pedido.id) }}"
+                                      class="inline-action-form">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="status" value="entregue">
+                                    <button type="submit"
+                                            class="confirm-payment-btn">
+                                        Marcar entregue
+                                    </button>
+                                </form>
+                            {% endif %}
+
+                            {% if pedido.status in ["entregue", "cancelado"] %}
                                 <span class="empty-value">
-                                    Concluído
+                                    Sem ações
                                 </span>
                             {% endif %}
                         </td>
@@ -211,7 +291,7 @@
                 {% else %}
 
                     <tr>
-                        <td colspan="9">
+                        <td colspan="10">
 
                             <div class="empty-table-state">
 

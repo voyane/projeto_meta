@@ -148,12 +148,17 @@ Carrinho
                     <div class="payment-result" id="paymentResult" hidden>
                         <h4 id="paymentResultTitle"></h4>
                         <p id="paymentResultText"></p>
+                        <a id="paymentUploadLink"
+                           class="proof-btn"
+                           href="{{ url_for('main.meus_pedidos') }}">
+                            Anexar comprovativo
+                        </a>
                         <a id="paymentProofLink"
                            class="proof-btn"
                            href="#"
                            target="_blank"
                            rel="noopener">
-                            Enviar comprovativo
+                            Enviar pelo WhatsApp
                         </a>
                     </div>
 
@@ -183,5 +188,5 @@ Carrinho
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cart.js') }}?v=20260715-csrf"></script>
 {% endblock %}

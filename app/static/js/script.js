@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCartCount();
 });
 
+const csrfToken = document.querySelector("meta[name='csrf-token']")?.content;
+
 /* =========================================================
    CHAT
 ========================================================= */
@@ -117,11 +119,13 @@ function inicializarRatings() {
                     const response = await fetch("/api/rating", {
                         method: "POST",
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrfToken
                         },
                         body: JSON.stringify({
                             produto_id: produtoId,
-                            valor: valor
+                            valor: valor,
+                            csrf_token: csrfToken
                         })
                     });
 
@@ -227,10 +231,12 @@ async function adicionarCarrinho(slug, button = null) {
         const response = await fetch("/api/cart/add", {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken
             },
             body: JSON.stringify({
-                slug: slug
+                slug: slug,
+                csrf_token: csrfToken
             })
         });
 

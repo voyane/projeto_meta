@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Nova Categoria{% endblock %}
+{% block title %}{{ "Editar Categoria" if categoria else "Nova Categoria" }}{% endblock %}
 
 {% block content %}
 
 <section class="admin-form-page">
 
     <div class="admin-header-div">
-        <h1>Nova Categoria</h1>
+        <h1>{{ "Editar Categoria" if categoria else "Nova Categoria" }}</h1>
 
         <a href="{{ url_for('admin.categorias') }}" class="admin-btn">
             Voltar
@@ -15,13 +15,21 @@
     </div>
 
     <form method="POST" class="admin-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-        <input type="text" name="nome" placeholder="Nome da categoria" required>
+        <input type="text"
+               name="nome"
+               placeholder="Nome da categoria"
+               value="{{ categoria.nome if categoria else '' }}"
+               required>
 
-        <textarea name="descricao" placeholder="Descrição da categoria"></textarea>
+        <textarea name="descricao"
+                  placeholder="Descrição da categoria">{{ categoria.descricao if categoria else '' }}</textarea>
 
         <label>
-            <input type="checkbox" name="ativo" checked>
+            <input type="checkbox"
+                   name="ativo"
+                   {% if not categoria or categoria.ativo %}checked{% endif %}>
             Categoria ativa
         </label>
 

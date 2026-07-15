@@ -29,6 +29,7 @@
                 <th>Desconto</th>
                 <th>Período</th>
                 <th>Estado</th>
+                <th>Ações</th>
             </tr>
 
         </thead>
@@ -72,6 +73,22 @@
                         <span class="status-badge status-active">Ativa</span>
                     {% endif %}
 
+                </td>
+
+                <td>
+                    <a href="{{ url_for('admin.editar_promocao', id=promocao.id) }}">
+                        Editar
+                    </a>
+
+                    <form method="POST"
+                          action="{{ url_for('admin.apagar_promocao', id=promocao.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Apagar esta promoção?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">
+                            Apagar
+                        </button>
+                    </form>
                 </td>
 
             </tr>

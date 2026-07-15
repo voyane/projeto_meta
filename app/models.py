@@ -187,6 +187,8 @@ class Pedido(db.Model):
     payment_label = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(30), nullable=False, default="pendente")
     total = db.Column(db.Float, nullable=False, default=0)
+    comprovativo = db.Column(db.String(255), nullable=True)
+    comprovativo_enviado_em = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship("User", backref=db.backref("pedidos", lazy=True))
@@ -274,4 +276,3 @@ class Promocao(db.Model):
     ativo = db.Column(db.Boolean, default=True)
 
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-

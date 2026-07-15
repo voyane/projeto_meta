@@ -16,10 +16,12 @@ document.querySelectorAll(".btn-remove").forEach(btn => {
     });
 });
 
+const csrfToken = document.querySelector("meta[name='csrf-token']")?.content;
 const checkoutBtn = document.querySelector(".checkout-btn");
 const paymentResult = document.getElementById("paymentResult");
 const paymentResultTitle = document.getElementById("paymentResultTitle");
 const paymentResultText = document.getElementById("paymentResultText");
+const paymentUploadLink = document.getElementById("paymentUploadLink");
 const paymentProofLink = document.getElementById("paymentProofLink");
 
 if (checkoutBtn) {
@@ -30,15 +32,23 @@ function updateQty(itemId, action) {
     fetch("/api/cart/update", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
         },
-        body: JSON.stringify({item_id: itemId, action: action})
+        body: JSON.stringify({
+            item_id: itemId,
+            action: action,
+            csrf_token: csrfToken
+        })
     })
     .then(res => res.json())
     .then(data => {
         if(data.success){
             location.reload();
+            return;
         }
+
+        alert(data.message || "Não foi possível atualizar o carrinho.");
     })
     .catch(err => console.error(err));
 }
@@ -55,9 +65,13 @@ function finalizeOrder() {
     fetch("/api/cart/checkout", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
         },
-        body: JSON.stringify({payment_method: paymentMethod})
+        body: JSON.stringify({
+            payment_method: paymentMethod,
+            csrf_token: csrfToken
+        })
     })
     .then(res => res.json())
     .then(data => {
@@ -96,7 +110,10 @@ function showPaymentInstructions(data) {
         `${data.instructions}\n` +
         `Número: ${data.payment_number}\n` +
         `Total: ${data.total}\n\n` +
-        "Depois de pagar, envie o comprovativo pelo WhatsApp.";
+        "Depois de pagar, anexe o comprovativo em Meus Pedidos.";
+    if (paymentUploadLink) {
+        paymentUploadLink.href = "/meus-pedidos";
+    }
     paymentProofLink.href = data.proof_whatsapp_url;
     paymentResult.hidden = false;
 }
@@ -105,15 +122,22 @@ function removeItem(itemId) {
     fetch("/api/cart/remove", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken
         },
-        body: JSON.stringify({item_id: itemId})
+        body: JSON.stringify({
+            item_id: itemId,
+            csrf_token: csrfToken
+        })
     })
     .then(res => res.json())
     .then(data => {
         if(data.success){
             location.reload();
+            return;
         }
+
+        alert(data.message || "Não foi possível remover o item.");
     })
     .catch(err => console.error(err));
 }

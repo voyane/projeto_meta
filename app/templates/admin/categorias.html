@@ -19,6 +19,7 @@
                 <th>Nome</th>
                 <th>Slug</th>
                 <th>Estado</th>
+                <th>Ações</th>
             </tr>
         </thead>
 
@@ -28,6 +29,21 @@
                 <td>{{ categoria.nome }}</td>
                 <td>{{ categoria.slug }}</td>
                 <td>{{ "Ativa" if categoria.ativo else "Inativa" }}</td>
+                <td>
+                    <a href="{{ url_for('admin.editar_categoria', id=categoria.id) }}">
+                        Editar
+                    </a>
+
+                    <form method="POST"
+                          action="{{ url_for('admin.apagar_categoria', id=categoria.id) }}"
+                          style="display:inline;"
+                          onsubmit="return confirm('Apagar esta categoria?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit">
+                            Apagar
+                        </button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

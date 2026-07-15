@@ -21,6 +21,7 @@
         {% endwith %}
 
         <form method="POST" class="login-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- mantém página anterior -->
             <input type="hidden" name="next" value="{{ next or url_for('main.index') }}">
             <input type="email" name="email" placeholder="Digite o Email" required>
