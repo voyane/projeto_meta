@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+Meus Pedidos
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header-div">
+
+        <div>
+            <h1>Meus Pedidos</h1>
+            <p>Histórico das suas compras.</p>
+        </div>
+
+        <a href="{{ url_for('main.index') }}" class="admin-btn">
+            Continuar Comprando
+        </a>
+
+    </div>
+
+    <div class="admin-table-wrapper">
+
+        <table class="admin-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Pedido</th>
+
+                    <th>Data</th>
+
+                    <th>Produtos</th>
+
+                    <th>Quantidade</th>
+
+                    <th>Pagamento</th>
+
+                    <th>Estado</th>
+
+                    <th>Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for pedido in pedidos %}
+
+                    <tr>
+
+                        <td>#{{ pedido.id }}</td>
+
+                        <td>
+                            {{ pedido.created_at.strftime("%d/%m/%Y") }}
+                        </td>
+
+                        <td>
+
+                            {% if pedido.items %}
+
+                                {% for item in pedido.items %}
+
+                                    <div class="pedido-produto">
+
+                                        {% if item.produto_imagem %}
+                                            <img
+                                                src="{{ url_for('static', filename=item.produto_imagem) }}"
+                                                alt="{{ item.produto_nome }}"
+                                                class="pedido-produto-img">
+                                        {% endif %}
+
+                                        <div class="pedido-produto-info">
+
+                                            <strong>
+                                                {{ item.produto_nome }}
+                                            </strong>
+
+                                            <small>
+                                                Quantidade:
+                                                {{ item.quantidade }}
+                                            </small>
+
+                                            <small>
+                                                {{ "%.2f"|format(item.preco_unitario) }} MT
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <span class="empty-value">
+                                    Nenhum produto
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {{ pedido.total_quantidade() }}
+
+                        </td>
+
+                        <td>
+                            {{ pedido.payment_label }}
+                        </td>
+
+                        <td>
+                            {{ pedido.status|replace("_", " ")|capitalize }}
+                        </td>
+
+                        <td>
+
+                            {{ "%.2f"|format(pedido.total) }} MT
+
+                        </td>
+
+                    </tr>
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="7">
+
+                            <div class="empty-table-state">
+
+                                <i class="fa-solid fa-box-open"></i>
+
+                                <h3>Nenhum pedido encontrado.</h3>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+{% endblock %}

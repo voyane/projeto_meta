@@ -27,6 +27,7 @@
                 <th>Nome</th>
                 <th>Produto</th>
                 <th>Desconto</th>
+                <th>Período</th>
                 <th>Estado</th>
             </tr>
 
@@ -47,11 +48,28 @@
                 <td>{{ promocao.desconto }}%</td>
 
                 <td>
+                    <div class="promotion-period">
+                        <span>
+                            Início:
+                            {{ promocao.data_inicio.strftime("%d/%m/%Y %H:%M") if promocao.data_inicio else "Imediato" }}
+                        </span>
+                        <span>
+                            Fim:
+                            {{ promocao.data_fim.strftime("%d/%m/%Y %H:%M") if promocao.data_fim else "Sem fim definido" }}
+                        </span>
+                    </div>
+                </td>
 
-                    {% if promocao.ativo %}
-                        <span style="color:green;">Ativa</span>
+                <td>
+
+                    {% if not promocao.ativo %}
+                        <span class="status-badge status-inactive">Inativa</span>
+                    {% elif promocao.data_inicio and promocao.data_inicio > agora %}
+                        <span class="status-badge status-scheduled">Agendada</span>
+                    {% elif promocao.data_fim and promocao.data_fim < agora %}
+                        <span class="status-badge status-expired">Expirada</span>
                     {% else %}
-                        <span style="color:red;">Inativa</span>
+                        <span class="status-badge status-active">Ativa</span>
                     {% endif %}
 
                 </td>

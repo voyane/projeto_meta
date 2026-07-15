@@ -5,7 +5,7 @@
         <title>Painel Admin</title>
     </head>
     <body>
-        <h1>Bem-vindo, Admin {{ current_user.username }}!</h1>
+        <h1>Bem-vindo, Admin {{ current_user.name or current_user.email }}!</h1>
         <p>Aqui você pode gerenciar usuários, produtos e pedidos.</p>
     </body>
 </html>

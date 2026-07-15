@@ -1073,7 +1073,7 @@ textarea{
     position:fixed;
     bottom:90px;
     right:20px;
-    width:320px;
+    width:min(320px, calc(100vw - 32px));
     background:#fff;
     border-radius:15px;
     box-shadow:0 15px 40px rgba(0,0,0,0.3);
@@ -1178,5 +1178,4 @@ textarea{
         font-size:22px;
     }
 }
-
 

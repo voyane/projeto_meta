@@ -387,7 +387,7 @@ body::before{
     position:fixed;
     top:0;
     right:-400px;
-    width:350px;
+    width:min(350px, 100vw);
     height:100vh;
     background:#fff;
     box-shadow:-5px 0 20px rgba(0,0,0,0.2);
@@ -858,7 +858,8 @@ body::before{
 ========================================================= */
 
 .stock-badge{
-    width:max-content;
+    width:fit-content;
+    max-width:100%;
 
     margin-top:5px;
 
@@ -868,6 +869,13 @@ body::before{
 
     font-size:12px;
     font-weight:700;
+}
+
+@media (max-width:450px){
+    .cart-drawer{
+        right:-100vw;
+        width:100vw;
+    }
 }
 
 .stock-available{

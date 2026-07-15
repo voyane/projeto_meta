@@ -34,8 +34,8 @@
         <div class="dashboard-card">
             <i class="fa-solid fa-cart-shopping"></i>
             <div>
-                <h3>{{ total_carrinhos }}</h3>
-                <p>Carrinhos</p>
+                <h3>{{ total_pedidos }}</h3>
+                <p>Pedidos</p>
             </div>
         </div>
 
@@ -57,13 +57,13 @@
             <p>Adicionar, editar preços, descontos e descrições.</p>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('admin.pedidos') }}" class="action-card">
             <i class="fa-solid fa-receipt"></i>
             <h3>Pedidos</h3>
             <p>Ver e acompanhar pedidos dos clientes.</p>
         </a>
 
-        <a href="#" class="action-card">
+        <a href="{{ url_for('admin.promocoes') }}" class="action-card">
             <i class="fa-solid fa-tags"></i>
             <h3>Promoções</h3>
             <p>Criar campanhas, descontos e destaques.</p>

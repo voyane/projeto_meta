@@ -177,6 +177,65 @@ class CartItem(db.Model):
         )
     )
 
+# ================= PEDIDO =================
+class Pedido(db.Model):
+    __tablename__ = "pedidos"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    payment_method = db.Column(db.String(30), nullable=False)
+    payment_label = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(30), nullable=False, default="pendente")
+    total = db.Column(db.Float, nullable=False, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User", backref=db.backref("pedidos", lazy=True))
+    items = db.relationship(
+        "PedidoItem",
+        backref="pedido",
+        cascade="all, delete-orphan",
+        lazy=True
+    )
+
+    def total_quantidade(self):
+        return sum(item.quantidade for item in self.items)
+
+# ================= PEDIDO ITEM =================
+class PedidoItem(db.Model):
+    __tablename__ = "pedido_items"
+
+    id = db.Column(db.Integer, primary_key=True)
+    pedido_id = db.Column(
+        db.Integer,
+        db.ForeignKey("pedidos.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+    produto_id = db.Column(
+        db.Integer,
+        db.ForeignKey("produtos.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True
+    )
+    produto_nome = db.Column(db.String(150), nullable=False)
+    produto_imagem = db.Column(db.String(255), nullable=True)
+    produto_slug = db.Column(db.String(100), nullable=True)
+    preco_unitario = db.Column(db.Float, nullable=False)
+    quantidade = db.Column(db.Integer, nullable=False)
+    subtotal = db.Column(db.Float, nullable=False)
+
+    produto = db.relationship(
+        "Produto",
+        backref=db.backref("pedido_items", lazy=True)
+    )
+
+    __table_args__ = (
+        db.CheckConstraint(
+            "quantidade > 0",
+            name="check_pedido_item_quantidade_positiva"
+        ),
+    )
+
 #========================CATEGORIAS========================
 class Categoria(db.Model):
     __tablename__ = "categorias"
@@ -215,5 +274,4 @@ class Promocao(db.Model):
     ativo = db.Column(db.Boolean, default=True)
 
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-
 

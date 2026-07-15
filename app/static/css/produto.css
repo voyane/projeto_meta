@@ -114,7 +114,8 @@ body::before{
 .produto-info h2::after{
     content: '';
     display: block;
-    width: 500px;
+    width: 100%;
+    max-width: 500px;
     height: 4px;
     background-color: #223FAD;
     margin: 10px 0;

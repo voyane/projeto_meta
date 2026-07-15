@@ -151,6 +151,58 @@
     margin:25px 0;
 }
 
+.payment-methods{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.payment-title{
+    color:#223FAD;
+    font-weight:700;
+}
+
+.payment-option{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:13px;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.payment-option:hover{
+    border-color:#223FAD;
+    background:#f8fbff;
+}
+
+.payment-option input{
+    margin-top:4px;
+    accent-color:#16a34a;
+}
+
+.payment-option strong,
+.payment-option small{
+    display:block;
+}
+
+.payment-option strong{
+    color:#0f172a;
+}
+
+.payment-option small{
+    color:#64748b;
+    margin-top:3px;
+}
+
+.payment-option:has(input:checked){
+    border-color:#16a34a;
+    background:#f0fdf4;
+}
+
 .checkout-btn{
     width:100%;
     padding:15px;
@@ -170,6 +222,41 @@
     border-color: #fff;
     transform:translateY(-4px);
     box-shadow:0 15px 30px rgba(22,163,74,.4);
+}
+
+.payment-result{
+    margin-top:18px;
+    padding:16px;
+    border:1px solid #bbf7d0;
+    border-radius:14px;
+    background:#f0fdf4;
+}
+
+.payment-result h4{
+    color:#166534;
+    margin-bottom:8px;
+}
+
+.payment-result p{
+    color:#334155;
+    line-height:1.5;
+    white-space:pre-line;
+}
+
+.proof-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:14px;
+    padding:12px 16px;
+    border-radius:10px;
+    background:#16a34a;
+    color:#fff;
+    font-weight:700;
+}
+
+.proof-btn:hover{
+    background:#223FAD;
 }
 
 .empty-cart{
@@ -205,5 +292,27 @@
     .product-image{
         max-width:150px;
         margin:auto;
+    }
+
+    .cart-summary{
+        position:static;
+    }
+}
+
+@media(max-width:480px){
+    .cart-page{
+        padding:18px 12px;
+    }
+
+    .breadcrumb-container{
+        padding:0;
+    }
+
+    .cart-item{
+        padding:16px;
+    }
+
+    .cart-controls{
+        justify-content:center;
     }
 }

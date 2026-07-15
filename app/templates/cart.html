@@ -113,9 +113,49 @@ Carrinho
                         <strong>{{ "%.2f"|format(total) }} MT</strong>
                     </div>
 
+                    <div class="payment-methods">
+                        <span class="payment-title">Forma de pagamento</span>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="mpesa" checked>
+                            <span>
+                                <strong>M-Pesa</strong>
+                                <small>Pagar por transferência M-Pesa</small>
+                            </span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="emola">
+                            <span>
+                                <strong>e-Mola</strong>
+                                <small>Pagar por transferência e-Mola</small>
+                            </span>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="whatsapp">
+                            <span>
+                                <strong>WhatsApp</strong>
+                                <small>Combinar pagamento com a loja</small>
+                            </span>
+                        </label>
+                    </div>
+
                     <button class="checkout-btn">
                         Finalizar Pedido
                     </button>
+
+                    <div class="payment-result" id="paymentResult" hidden>
+                        <h4 id="paymentResultTitle"></h4>
+                        <p id="paymentResultText"></p>
+                        <a id="paymentProofLink"
+                           class="proof-btn"
+                           href="#"
+                           target="_blank"
+                           rel="noopener">
+                            Enviar comprovativo
+                        </a>
+                    </div>
 
                 </div>
 

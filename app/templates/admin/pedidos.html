@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Carrinhos dos Clientes{% endblock %}
+{% block title %}Pedidos dos Clientes{% endblock %}
 
 {% block content %}
 
@@ -8,8 +8,8 @@
 
     <div class="admin-header">
         <div>
-            <h1>Carrinhos dos Clientes</h1>
-            <p>Visualize os produtos atualmente adicionados pelos clientes.</p>
+            <h1>Pedidos dos Clientes</h1>
+            <p>Visualize os pedidos finalizados pelos clientes.</p>
         </div>
     </div>
 
@@ -22,9 +22,12 @@
                     <th>ID</th>
                     <th>Cliente</th>
                     <th>Produtos</th>
+                    <th>Pagamento</th>
+                    <th>Estado</th>
                     <th>Quantidade total</th>
-                    <th>Valor estimado</th>
+                    <th>Total</th>
                     <th>Criado em</th>
+                    <th>Ações</th>
                 </tr>
             </thead>
 
@@ -32,17 +35,7 @@
 
                 {% for pedido in pedidos %}
 
-                    {% set total_quantidade = pedido.items
-                        | map(attribute='quantidade')
-                        | sum %}
-
-                    {% set total = namespace(valor=0) %}
-
-                    {% for item in pedido.items %}
-                        {% set total.valor = total.valor + (
-                            item.quantidade * item.produto.preco
-                        ) %}
-                    {% endfor %}
+                    {% set total_quantidade = pedido.total_quantidade() %}
 
                     <tr>
 
@@ -81,19 +74,23 @@
 
                                         <div class="pedido-produto-item">
 
-                                            <a href="{{ url_for(
-                                                'main.produto_detalhe',
-                                                slug=item.produto.slug
-                                            ) }}"
-                                               class="pedido-produto-imagem">
+                                            {% if item.produto_slug %}
+                                                <a href="{{ url_for(
+                                                    'main.produto_detalhe',
+                                                    slug=item.produto_slug
+                                                ) }}"
+                                                   class="pedido-produto-imagem">
+                                            {% else %}
+                                                <div class="pedido-produto-imagem">
+                                            {% endif %}
 
-                                                {% if item.produto.imagem %}
+                                                {% if item.produto_imagem %}
                                                     <img
                                                         src="{{ url_for(
                                                             'static',
-                                                            filename=item.produto.imagem
+                                                            filename=item.produto_imagem
                                                         ) }}"
-                                                        alt="{{ item.produto.nome }}"
+                                                        alt="{{ item.produto_nome }}"
                                                         loading="lazy">
                                                 {% else %}
                                                     <div class="produto-sem-imagem">
@@ -101,17 +98,27 @@
                                                     </div>
                                                 {% endif %}
 
-                                            </a>
+                                            {% if item.produto_slug %}
+                                                </a>
+                                            {% else %}
+                                                </div>
+                                            {% endif %}
 
                                             <div class="pedido-produto-dados">
 
-                                                <a href="{{ url_for(
-                                                    'main.produto_detalhe',
-                                                    slug=item.produto.slug
-                                                ) }}"
-                                                   class="pedido-produto-nome">
-                                                    {{ item.produto.nome }}
-                                                </a>
+                                                {% if item.produto_slug %}
+                                                    <a href="{{ url_for(
+                                                        'main.produto_detalhe',
+                                                        slug=item.produto_slug
+                                                    ) }}"
+                                                       class="pedido-produto-nome">
+                                                        {{ item.produto_nome }}
+                                                    </a>
+                                                {% else %}
+                                                    <strong class="pedido-produto-nome">
+                                                        {{ item.produto_nome }}
+                                                    </strong>
+                                                {% endif %}
 
                                                 <span>
                                                     Quantidade:
@@ -121,7 +128,7 @@
                                                 <span>
                                                     Preço:
                                                     <strong>
-                                                        {{ "%.2f"|format(item.produto.preco) }} MT
+                                                        {{ "%.2f"|format(item.preco_unitario) }} MT
                                                     </strong>
                                                 </span>
 
@@ -129,7 +136,7 @@
                                                     Subtotal:
                                                     <strong>
                                                         {{ "%.2f"|format(
-                                                            item.quantidade * item.produto.preco
+                                                            item.subtotal
                                                         ) }} MT
                                                     </strong>
                                                 </span>
@@ -145,10 +152,18 @@
                             {% else %}
 
                                 <span class="empty-value">
-                                    Carrinho vazio
+                                    Pedido sem produtos
                                 </span>
 
                             {% endif %}
+                        </td>
+
+                        <td>{{ pedido.payment_label }}</td>
+
+                        <td>
+                            <span class="status-badge">
+                                {{ pedido.status|replace("_", " ")|capitalize }}
+                            </span>
                         </td>
 
                         <td>
@@ -159,7 +174,7 @@
 
                         <td>
                             <strong class="pedido-total">
-                                {{ "%.2f"|format(total.valor) }} MT
+                                {{ "%.2f"|format(pedido.total) }} MT
                             </strong>
                         </td>
 
@@ -171,21 +186,41 @@
                             {% endif %}
                         </td>
 
+                        <td>
+                            {% if pedido.status != "pago" %}
+                                <form method="POST"
+                                      action="{{ url_for(
+                                          'admin.confirmar_pagamento',
+                                          id=pedido.id
+                                      ) }}">
+                                    <button type="submit"
+                                            class="confirm-payment-btn"
+                                            onclick="return confirm('Confirmar pagamento e baixar stock deste pedido?')">
+                                        Confirmar pagamento
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="empty-value">
+                                    Concluído
+                                </span>
+                            {% endif %}
+                        </td>
+
                     </tr>
 
                 {% else %}
 
                     <tr>
-                        <td colspan="6">
+                        <td colspan="9">
 
                             <div class="empty-table-state">
 
                                 <i class="fa-solid fa-cart-arrow-down"></i>
 
-                                <h3>Nenhum carrinho encontrado</h3>
+                                <h3>Nenhum pedido encontrado</h3>
 
                                 <p>
-                                    Os carrinhos dos clientes aparecerão aqui.
+                                    Os pedidos finalizados pelos clientes aparecerão aqui.
                                 </p>
 
                             </div>

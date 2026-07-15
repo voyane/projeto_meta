@@ -2,9 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from app.extensions import db
-from app.models import Produto, User, Cart, Rating, Categoria, Promocao
+from app.models import Produto, User, Rating, Categoria, Promocao, Pedido
 import os
 import re
+from datetime import datetime
 from sqlalchemy import or_
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
@@ -46,7 +47,7 @@ def dashboard():
         "admin/dashboard.html",
         total_produtos=Produto.query.count(),
         total_users=User.query.count(),
-        total_carrinhos=Cart.query.count(),
+        total_pedidos=Pedido.query.count(),
         total_avaliacoes=Rating.query.count()
     )
 
@@ -188,10 +189,29 @@ def categorias():
         flash("Acesso negado.", "danger")
         return redirect(url_for("main.index"))
 
+    categorias = Categoria.query.order_by(Categoria.nome.asc()).all()
+    return render_template("admin/categorias.html", categorias=categorias)
+
+#============================= NOVA CATEGORIA =========================
+@admin.route("/categorias/nova", methods=["GET", "POST"])
+@login_required
+def nova_categoria():
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
     if request.method == "POST":
-        nome = request.form.get("nome")
+        nome = request.form.get("nome", "").strip()
         descricao = request.form.get("descricao")
         ativo = request.form.get("ativo") == "on"
+
+        if not nome:
+            flash("Informe o nome da categoria.", "danger")
+            return redirect(url_for("admin.nova_categoria"))
+
+        if Categoria.query.filter_by(nome=nome).first():
+            flash("Categoria já existe.", "warning")
+            return redirect(url_for("admin.nova_categoria"))
 
         categoria = Categoria(
             nome=nome,
@@ -217,7 +237,11 @@ def promocoes():
         return redirect(url_for("main.index"))
 
     promocoes = Promocao.query.order_by(Promocao.id.desc()).all()
-    return render_template("admin/promocoes.html", promocoes=promocoes)
+    return render_template(
+        "admin/promocoes.html",
+        promocoes=promocoes,
+        agora=datetime.utcnow()
+    )
 
 #============================= NOVA PROMOÇÃO =========================
 @admin.route("/promocoes/nova", methods=["GET", "POST"])
@@ -230,7 +254,21 @@ def nova_promocao():
     produtos = Produto.query.order_by(Produto.nome.asc()).all()
 
     if request.method == "POST":
-        nome = request.form.get("nome")
+        nome = request.form.get("nome", "").strip()
+        data_inicio_raw = request.form.get("data_inicio")
+        data_fim_raw = request.form.get("data_fim")
+        data_inicio = None
+        data_fim = None
+
+        if data_inicio_raw:
+            data_inicio = datetime.strptime(data_inicio_raw, "%Y-%m-%dT%H:%M")
+
+        if data_fim_raw:
+            data_fim = datetime.strptime(data_fim_raw, "%Y-%m-%dT%H:%M")
+
+        if data_inicio and data_fim and data_fim <= data_inicio:
+            flash("A data de fim deve ser posterior à data de início.", "danger")
+            return redirect(url_for("admin.nova_promocao"))
 
         promocao = Promocao(
             nome=nome,
@@ -239,6 +277,8 @@ def nova_promocao():
             produto_id=int(request.form.get("produto_id")),
             desconto=int(request.form.get("desconto")),
             selo=request.form.get("selo") or "PROMO",
+            data_inicio=data_inicio or datetime.utcnow(),
+            data_fim=data_fim,
             ativo=request.form.get("ativo") == "on"
         )
 
@@ -354,7 +394,7 @@ def pedidos():
 
     page = request.args.get("page", 1, type=int)
 
-    pagination = Cart.query.order_by(Cart.id.desc()).paginate(
+    pagination = Pedido.query.order_by(Pedido.created_at.desc()).paginate(
         page=page,
         per_page=10,
         error_out=False
@@ -365,3 +405,54 @@ def pedidos():
         pedidos=pagination.items,
         pagination=pagination
     )
+
+#============================= CONFIRMAR PAGAMENTO =========================
+@admin.route("/pedidos/<int:id>/confirmar-pagamento", methods=["POST"])
+@login_required
+def confirmar_pagamento(id):
+    if not admin_required():
+        flash("Acesso negado.", "danger")
+        return redirect(url_for("main.index"))
+
+    pedido = Pedido.query.get_or_404(id)
+
+    if pedido.status == "pago":
+        flash("Este pedido já foi confirmado.", "info")
+        return redirect(url_for("admin.pedidos"))
+
+    produtos_sem_stock = []
+
+    for item in pedido.items:
+        if not item.produto:
+            produtos_sem_stock.append(f"{item.produto_nome} já não existe")
+            continue
+
+        stock_atual = item.produto.stock or 0
+
+        if stock_atual < item.quantidade:
+            produtos_sem_stock.append(
+                f"{item.produto_nome} tem apenas {stock_atual} em stock"
+            )
+
+    if produtos_sem_stock:
+        flash(
+            "Não foi possível confirmar o pagamento: "
+            + "; ".join(produtos_sem_stock),
+            "danger"
+        )
+        return redirect(url_for("admin.pedidos"))
+
+    for item in pedido.items:
+        item.produto.stock = (item.produto.stock or 0) - item.quantidade
+
+    pedido.status = "pago"
+    db.session.commit()
+
+    flash("Pagamento confirmado e stock atualizado.", "success")
+    return redirect(url_for("admin.pedidos"))
+
+#============================= PERFIL =========================
+@admin.route("/perfil")
+@login_required
+def perfil():
+    return redirect(url_for("main.perfil"))

@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, abort, current_app
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import User, Produto, Cart, CartItem, Rating
+from app.models import User, Produto, Cart, CartItem, Rating, Pedido, PedidoItem
 from app.extensions import db, mail
 from werkzeug.security import check_password_hash, generate_password_hash
 from sqlalchemy import func
-from urllib.parse import urlparse, urljoin
+from urllib.parse import quote, urlparse, urljoin
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from twilio.rest import Client
@@ -71,10 +71,14 @@ def register():
         return redirect(url_for("main.index"))
 
     if request.method == "POST":
-        email = request.form.get("email").lower()
-        password = request.form.get("password")
-        name = request.form.get("name")
-        phone = request.form.get("phone")
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        name = request.form.get("name", "").strip()
+        phone = request.form.get("phone", "").strip()
+
+        if not email or not password or not name or not phone:
+            flash("Preencha todos os campos.", "danger")
+            return redirect(url_for("main.register"))
 
         # Verifica se o usuário já existe
         if User.query.filter_by(email=email).first():
@@ -132,14 +136,14 @@ def forgot_password():
 #==================VERIFICAR CÓDIGO=========================
 @main.route("/verify-code", methods=["GET", "POST"])
 def verify_code():
-    phone = request.args.get("phone")
+    phone = request.args.get("phone", "").strip()
+    phone = phone.replace(" ", "").replace("-", "")
 
     if not phone:
         flash("Telefone inválido.", "danger")
         return redirect(url_for("main.forgot_password"))
 
     user = User.query.filter_by(phone=phone).first()
-    phone = phone.replace(" ", "").replace("-", "")
 
     if not user:
         flash("Utilizador não encontrado.", "danger")
@@ -167,7 +171,8 @@ def verify_code():
 #==================RESETAR SENHA=========================
 @main.route("/reset-password", methods=["GET", "POST"])
 def reset_password():
-    phone = request.args.get("phone")
+    phone = request.args.get("phone", "").strip()
+    phone = phone.replace(" ", "").replace("-", "")
 
     if not phone:
         flash("Telefone inválido.", "danger")
@@ -216,6 +221,12 @@ def index():
     produtos = Produto.query.all()
     return render_template("index.html", produtos=produtos)
 
+#========================Perfil==========================
+@main.route("/perfil")
+@login_required
+def perfil():
+    return render_template("perfil.html", user=current_user)
+
 #==================Páginas de Produtos=====================
 @main.route("/categoria/<categoria>")
 def categoria(categoria):
@@ -260,9 +271,19 @@ def list_produto():
 @main.route("/api/rating", methods=["POST"])
 @login_required
 def salvar_rating():
-    data = request.get_json()
-    produto_id = data.get("produto_id")
-    valor = data.get("valor")
+    data = request.get_json(silent=True) or {}
+
+    try:
+        produto_id = int(data.get("produto_id"))
+        valor = int(data.get("valor"))
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "Dados inválidos."}), 400
+
+    if valor < 1 or valor > 5:
+        return jsonify({"success": False, "message": "Avaliação inválida."}), 400
+
+    if not db.session.get(Produto, produto_id):
+        return jsonify({"success": False, "message": "Produto não encontrado."}), 404
 
     rating = Rating.query.filter_by(user_id=current_user.id, produto_id=produto_id
     ).first()
@@ -300,8 +321,11 @@ def add_to_cart():
     if not current_user.is_authenticated:
         return jsonify({"login_required": True})
 
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     slug = data.get("slug")
+
+    if not slug:
+        return jsonify({"success": False, "message": "Produto inválido."}), 400
 
     produto = Produto.query.filter_by(slug=slug).first()
 
@@ -326,9 +350,12 @@ def add_to_cart():
 @cart_bp.route("/api/cart/update", methods=["POST"])
 @login_required
 def update_cart():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     item_id = data.get("item_id")
     action = data.get("action")
+
+    if action not in ("increase", "decrease"):
+        return jsonify({"success": False, "message": "Ação inválida."}), 400
 
     # pegar item do usuário atual
     item = CartItem.query.join(Cart).filter(
@@ -354,7 +381,7 @@ def update_cart():
 @cart_bp.route("/api/cart/remove", methods=["POST"])
 @login_required
 def remove_item():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     item_id = data.get("item_id")
 
     item = CartItem.query.join(Cart).filter(
@@ -367,6 +394,144 @@ def remove_item():
         db.session.commit()
 
     return jsonify({"success": True})
+
+#===================== FINALIZAR PEDIDO ============================
+@cart_bp.route("/api/cart/checkout", methods=["POST"])
+@login_required
+def checkout_cart():
+    data = request.get_json(silent=True) or {}
+    payment_method = data.get("payment_method", "mpesa")
+    payment_options = {
+        "mpesa": {
+            "label": "M-Pesa",
+            "manual": True,
+            "number": current_app.config.get("MPESA_NUMBER", "845421616"),
+            "instructions": (
+                "Faça o pagamento por M-Pesa para o número abaixo."
+            )
+        },
+        "emola": {
+            "label": "e-Mola",
+            "manual": True,
+            "number": current_app.config.get("EMOLA_NUMBER", "875421616"),
+            "instructions": (
+                "Faça o pagamento por e-Mola para o número abaixo."
+            )
+        },
+        "whatsapp": {
+            "label": "WhatsApp",
+            "manual": False,
+            "number": None,
+            "instructions": (
+                "Pagamento: A combinar por WhatsApp"
+            )
+        }
+    }
+
+    payment = payment_options.get(payment_method)
+
+    if not payment:
+        return jsonify({
+            "success": False,
+            "message": "Forma de pagamento inválida."
+        }), 400
+
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+
+    if not cart or not cart.items:
+        return jsonify({
+            "success": False,
+            "message": "O carrinho está vazio."
+        }), 400
+
+    linhas = [
+        "Olá, quero finalizar este pedido:",
+        "",
+        f"Cliente: {current_user.name or current_user.email}",
+        f"Telefone: {current_user.phone}",
+        f"Forma de pagamento: {payment['label']}",
+        "",
+        "Produtos:"
+    ]
+
+    total = 0
+    pedido = Pedido(
+        user_id=current_user.id,
+        payment_method=payment_method,
+        payment_label=payment["label"],
+        status="aguardando_comprovativo" if payment["manual"] else "em_contacto",
+        total=0
+    )
+    db.session.add(pedido)
+
+    for item in cart.items:
+        subtotal = item.quantidade * item.produto.preco
+        total += subtotal
+        pedido.items.append(PedidoItem(
+            produto_id=item.produto.id,
+            produto_nome=item.produto.nome,
+            produto_imagem=item.produto.imagem,
+            produto_slug=item.produto.slug,
+            preco_unitario=item.produto.preco,
+            quantidade=item.quantidade,
+            subtotal=subtotal
+        ))
+        linhas.append(
+            f"- {item.produto.nome} | Qtd: {item.quantidade} | "
+            f"{subtotal:.2f} MT"
+        )
+
+    pedido.total = total
+
+    linhas.extend([
+        "",
+        f"Total: {total:.2f} MT",
+        "",
+        payment["instructions"]
+    ])
+
+    numero = current_app.config.get("STORE_WHATSAPP_NUMBER", "258845421616")
+    numero = "".join(caractere for caractere in numero if caractere.isdigit())
+    mensagem = quote("\n".join(linhas))
+
+    if payment["manual"]:
+        db.session.delete(cart)
+        db.session.commit()
+
+        comprovativo = quote(
+            "\n".join([
+                "Olá, já fiz o pagamento e quero enviar o comprovativo.",
+                "",
+                f"Pedido: #{pedido.id}",
+                f"Cliente: {current_user.name or current_user.email}",
+                f"Telefone: {current_user.phone}",
+                f"Forma de pagamento: {payment['label']}",
+                f"Total: {total:.2f} MT"
+            ])
+        )
+
+        return jsonify({
+            "success": True,
+            "manual_payment": True,
+            "pedido_id": pedido.id,
+            "payment_label": payment["label"],
+            "payment_number": payment["number"],
+            "total": f"{total:.2f} MT",
+            "instructions": payment["instructions"],
+            "proof_whatsapp_url": f"https://wa.me/{numero}?text={comprovativo}"
+        })
+
+    db.session.delete(cart)
+    db.session.commit()
+
+    linhas[1:1] = [f"Pedido: #{pedido.id}"]
+    mensagem = quote("\n".join(linhas))
+
+    return jsonify({
+        "success": True,
+        "pedido_id": pedido.id,
+        "whatsapp_url": f"https://wa.me/{numero}?text={mensagem}"
+    })
 
 #==================CART COUNT=========================
 @cart_bp.route("/api/cart/count")
@@ -394,3 +559,18 @@ def get_or_create_cart(user):
 
     return cart
 
+#==================MEUS PEDIDOS=========================
+@main.route("/meus-pedidos")
+@login_required
+def meus_pedidos():
+
+    pedidos = Pedido.query.filter_by(
+        user_id=current_user.id
+    ).order_by(
+        Pedido.created_at.desc()
+    ).all()
+
+    return render_template(
+        "meus_pedidos.html",
+        pedidos=pedidos
+    )

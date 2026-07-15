@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="
-   {{url_for('static', filename = 'css/style.css')}} ">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/categoria.css') }}">
     <title>Proteínas</title>
 </head>
 <body>
@@ -26,7 +25,7 @@
             <li class="login-link">
                 {% if current_user.is_authenticated %}
                     <span class="user-name">
-                        Olá, {{ current_user.username }} 👋
+                        Olá, {{ current_user.name or current_user.email }}
                     </span>
                     <a href="{{ url_for('main.logout') }}" class="logout-btn">
                         Logout

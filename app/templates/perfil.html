@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+Meu Perfil
+{% endblock %}
+
+{% block content %}
+
+<section class="admin-page">
+
+    <div class="admin-header-div">
+        <div>
+            <h1>Meu Perfil</h1>
+            <p>Informações da sua conta.</p>
+        </div>
+
+        <a href="{{ url_for('main.index') }}" class="admin-btn">
+            Voltar
+        </a>
+    </div>
+
+    <div class="profile-card">
+
+        <div class="profile-avatar">
+            {{ (user.name or user.email)[0]|upper }}
+        </div>
+
+        <div class="profile-info">
+
+            <h2>{{ user.name or user.email }}</h2>
+
+            <div class="profile-info-item">
+                <span>Email</span>
+                <strong>{{ user.email }}</strong>
+            </div>
+
+            <div class="profile-info-item">
+                <span>Telefone</span>
+                <strong>{{ user.phone }}</strong>
+            </div>
+
+            <div class="profile-info-item">
+                <span>Tipo de conta</span>
+
+                {% if user.is_admin %}
+                    <strong>Administrador</strong>
+                {% else %}
+                    <strong>Cliente</strong>
+                {% endif %}
+            </div>
+
+        </div> 
+
+    </div>
+
+</section>
+
+{% endblock %}
